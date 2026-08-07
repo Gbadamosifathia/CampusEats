@@ -1,0 +1,8 @@
+asgiref==3.12.1
+Django==5.2.17
+djangorestframework==3.17.2
+mysqlclient==2.2.8
+python-decouple==3.8
+sqlparse==0.5.5
+tzdata==2026.3
+whitenoise==6.12.0
