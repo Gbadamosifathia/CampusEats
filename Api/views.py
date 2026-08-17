@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from Eats.models import Vendor, MenuItem, Order, OrderItem, Payment
-from .serializers import VendorSerializers, MenuItemSerializers, OrderSerializers, OrderItemSerializers, SignupSerializers
+from .serializers import VendorSerializers, MenuItemSerializers, OrderSerializers, OrderItemSerializers, SignupSerializers, PaymentSerializers
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -11,15 +11,22 @@ from django.conf import settings
 from django.utils import timezone
 import hmac
 import hashlib
-from django.http import JsonResponse
+import json
+from django.http import HttpResponse
+from decimal import Decimal
+from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework_simplejwt.exceptions import TokenError
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
-    refresh_token = request.data.get('refresh')
-    token= RefreshToken(refresh_token)
-    token.blacklist()
-    return Response(status=205)
+    try:
+        refresh_token = request.data.get('refresh')
+        token= RefreshToken(refresh_token)
+        token.blacklist()
+        return Response(status=205)
+    except (TokenError, Exception):
+        return Response({'error': 'Invalid or expired token'}, status=400)
 
 @api_view(["POST"])
 def signup(request):
@@ -39,24 +46,26 @@ def vendor_list_create(request):
     elif request.method == 'POST':
         serializer = VendorSerializers(data = request.data)
         if serializer.is_valid():
-            serializer.save() 
+            serializer.save(owner=request.user) 
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
     
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def vendor_detail(request, pk):
-    vendor = get_object_or_404(Vendor, pk=pk, owner= request.user)
     if request.method == 'GET':
+        vendor = get_object_or_404(Vendor, pk=pk)
         serializer = VendorSerializers(vendor)
         return Response(serializer.data)
     if request.method =='PUT':
+        vendor = get_object_or_404(Vendor, pk=pk, owner= request.user)
         serializer = VendorSerializers(vendor, data = request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
     if request.method == 'DELETE':
+        vendor = get_object_or_404(Vendor, pk=pk, owner= request.user)
         vendor.delete()
         return Response(status=204)
 
@@ -79,17 +88,19 @@ def menuitem_list_create(request):
 @api_view(["GET", "PUT", "DELETE"])
 @permission_classes([IsAuthenticated])
 def menuitem_detail(request, pk):
-    menuitem = get_object_or_404(MenuItem, pk=pk, vendor__owner=request.user)
     if request.method == "GET":
+        menuitem = get_object_or_404(MenuItem, pk=pk)
         serializer = MenuItemSerializers(menuitem)
         return Response(serializer.data)
     if request.method == "PUT":
+        menuitem = get_object_or_404(MenuItem, pk=pk, vendor__owner=request.user)
         serializer = MenuItemSerializers(menuitem, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
     if request.method == "DELETE":
+        menuitem = get_object_or_404(MenuItem, pk=pk, vendor__owner=request.user)
         menuitem.delete()
         return Response(status=204)
     
@@ -103,7 +114,7 @@ def order_list_create(request):
     if request.method == "POST": 
         serializers = OrderSerializers(data = request.data)
         if serializers.is_valid():
-            serializers.save()
+            serializers.save(user=request.user)
             return Response(serializers.data, status=201)
         return Response(serializers.errors, status=400)
 @api_view(["GET", "PUT", "DELETE"])
@@ -130,11 +141,26 @@ def orderitem_list_create(request):
         serializer = OrderItemSerializers(orderitems, many= True)
         return Response(serializer.data)
     if request.method == "POST":
+        order_id = request.data.get('order')
+        order = get_object_or_404(Order, id=order_id, user=request.user)
         serializer = OrderItemSerializers(data = request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(order=order)
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def order_status_update(request, pk):
+    order = get_object_or_404(Order, pk=pk, vendor__owner= request.user)
+    new_status = request.data.get('status')
+    valid_statuses = ['Pending', 'Paid', 'Preparing', 'Completed', 'Cancelled']
+    if new_status not in valid_statuses:
+        return Response({'error': 'invalid status'}, status= 400)
+    order.status = new_status
+    order.save()
+    return Response(OrderSerializers(order).data)
+
 @api_view(["GET", "PUT", "DELETE"])
 @permission_classes([IsAuthenticated])
 def orderitem_detail(request, pk):
@@ -164,11 +190,22 @@ def initialize_payment(request, order_id):
     }
     data = {
         "email" : request.user.email,
-        "amount" : int(order.total_amount * 100),
+        "amount" : int(Decimal(str(order.total_amount ))* 100),
         "reference": f"order_{order_id}_{order.created_at.timestamp()}",
     }
+
     response = requests.post("https://api.paystack.co/transaction/initialize", json = data, headers=headers)
-    return Response(response.json())
+    result = response.json()
+    if not response.ok or not result.get('status'):
+        return Response({'error': 'Failed to initialize payment'}, status=502)
+    Payment.objects.create(
+        order=order,
+        reference=data['reference'],
+        amount=order.total_amount,
+        status='Pending'
+    )
+    return Response(result)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def verify_payment(request, reference):
@@ -188,8 +225,10 @@ def verify_payment(request, reference):
     return Response({'message':'payment verification failed'}, status=400)
 
 @csrf_exempt
-@api_view(['POST'])
 def paystack_webhook(request):
+    if request.method != 'POST':
+        return HttpResponse(status=405)
+        
     paystack_signature = request.headers.get('x-paystack-signature')
     
     computed_signature = hmac.new(
@@ -198,18 +237,27 @@ def paystack_webhook(request):
         hashlib.sha512
     ).hexdigest()
     
-    if computed_signature != paystack_signature:
-        return Response({'error': 'Invalid signature'}, status=400)
+    if not hmac.compare_digest(computed_signature, paystack_signature):
+        return HttpResponse('Invalid signature', status=400)
     
-    event = request.data
+    # Parse the raw body manually since we removed @api_view
+    try:
+        event = json.loads(request.body)
+    except json.JSONDecodeError:
+        return HttpResponse(status=400)
     if event['event'] == 'charge.success':
         reference = event['data']['reference']
-        payment = get_object_or_404(Payment, reference=reference)
+        try:
+            payment = Payment.objects.get(reference=reference)
+        except ObjectDoesNotExist:
+            # Return 200 so Paystack stops retrying a transaction that isn't in your DB
+            return HttpResponse(status=200)
+            
         payment.status = 'Success'
         payment.verified_at = timezone.now()
         payment.save()
         
         payment.order.status = 'Paid'
         payment.order.save()
-    
-    return Response(status=200)
+        
+    return HttpResponse(status=200)

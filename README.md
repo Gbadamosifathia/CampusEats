@@ -1,4 +1,4 @@
-# 🍔 CampusEats API
+# 🍔 CampusEats 
 
 A campus food-ordering backend built with **Django REST Framework**, allowing students to order from campus vendors and pay online through **Paystack**.
 

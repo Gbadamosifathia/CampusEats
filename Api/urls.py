@@ -10,6 +10,7 @@ urlpatterns =[
     path('order/<int:pk>/', views.order_detail, name="order_detail"),
     path('orderitem_list/', views.orderitem_list_create, name="orderitem_list_create"),
     path('orderitem/<int:pk>/', views.orderitem_detail, name="orderitem_detail"),
+    path('order/<int:pk/status', views.order_status_update, name= "order_status_update"),
     path('signup/', views.signup, name='signup'),
     path('logout', views.logout, name='logout'),
     path('payment/initialize/<int:order_id>/', views.initialize_payment, name="initialize_payment"),
