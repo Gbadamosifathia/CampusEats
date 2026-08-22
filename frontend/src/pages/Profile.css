@@ -1,0 +1,269 @@
+.profile-page {
+  background-color: #fafafa;
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+.profile-header {
+  padding: 24px 20px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.profile-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1c1c1e;
+  margin: 0;
+}
+
+.profile-content {
+  padding: 32px 20px;
+}
+
+@media (min-width: 768px) {
+  .profile-content {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+.user-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.avatar-wrapper {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 4px solid #ffffff;
+}
+
+.user-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1c1c1e;
+  margin: 0 0 4px 0;
+}
+
+.user-email {
+  font-size: 14px;
+  color: #6a5e5c;
+  margin: 0;
+}
+
+.settings-section {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+.settings-item {
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.settings-item:last-child {
+  border-bottom: none;
+}
+
+.settings-item:hover {
+  background-color: #f9f9f9;
+}
+
+.settings-item-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.settings-icon {
+  color: #6a5e5c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-item-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1c1c1e;
+}
+
+.logout-btn .settings-icon,
+.logout-btn .settings-item-title {
+  color: #b03a25;
+}
+
+/* Vendor Profile Additions */
+.vendor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mock-logo {
+  width: 24px;
+  height: 24px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.vendor-add-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.vendor-add-menu h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #001220;
+  margin: 0 0 8px 0;
+}
+
+.vendor-add-menu .subtitle {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 24px 0;
+  line-height: 1.4;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.upload-box {
+  background-color: #f2f2f2;
+  border-radius: 12px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  border: 1px dashed #ccc;
+  transition: background-color 0.2s ease;
+}
+
+.upload-box:hover {
+  background-color: #e8e8e8;
+}
+
+.upload-text {
+  color: #a03500;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group textarea {
+  background-color: #f2f2f2;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-family: inherit;
+  color: #333;
+  outline: none;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #999;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.price-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.price-input-wrapper input {
+  width: 100%;
+  padding-left: 36px !important;
+}
+
+.save-menu-btn {
+  background-color: #a03500;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(160, 53, 0, 0.2);
+  transition: opacity 0.2s ease;
+}
+
+.save-menu-btn:hover {
+  opacity: 0.9;
+}

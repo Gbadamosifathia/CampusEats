@@ -1,0 +1,46 @@
+.category-scroll-container {
+  overflow-x: auto;
+  padding: 0 20px 20px 20px;
+  background-color: #fafafa;
+  /* Hide scrollbar for clean look */
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+
+.category-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.category-list {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+}
+
+.category-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #f0f0f0;
+  background-color: #ffffff;
+  color: #6a5e5c;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  transition: all 0.2s ease;
+}
+
+.category-pill.active {
+  background-color: #b03a25; /* darker shade of orange/red to match design */
+  background-color: #D9534F;
+  color: #ffffff;
+  border-color: #D9534F;
+}
+
+.cat-icon {
+  display: flex;
+  align-items: center;
+}
