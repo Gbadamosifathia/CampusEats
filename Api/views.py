@@ -69,11 +69,23 @@ def vendor_detail(request, pk):
         vendor.delete()
         return Response(status=204)
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def vendor_orders(request, pk):
+    vendor = get_object_or_404(Vendor, pk=pk, owner=request.user)
+    orders = Order.objects.filter(vendor=vendor)
+    serializer = OrderSerializers(orders, many=True)
+    return Response(serializer.data)
+
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def menuitem_list_create(request):
     if request.method =="GET":
-        menuitems = MenuItem.objects.all()
+        vendor_id = request.query_params.get('vendor')
+        if vendor_id:
+            menuitems = MenuItem.objects.filter(vendor_id=vendor_id)
+        else:
+            menuitems = MenuItem.objects.filter(vendor__owner = request.user)
         serializer = MenuItemSerializers(menuitems, many=True)
         return Response(serializer.data)
     if request.method == 'POST':

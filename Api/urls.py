@@ -10,10 +10,11 @@ urlpatterns =[
     path('order/<int:pk>/', views.order_detail, name="order_detail"),
     path('orderitem_list/', views.orderitem_list_create, name="orderitem_list_create"),
     path('orderitem/<int:pk>/', views.orderitem_detail, name="orderitem_detail"),
-    path('order/<int:pk/status/', views.order_status_update, name= "order_status_update"),
+    path('order/<int:pk>/status/', views.order_status_update, name="order_status_update"),
     path('signup/', views.signup, name='signup'),
     path('logout/', views.logout, name='logout'),
     path('payment/initialize/<int:order_id>/', views.initialize_payment, name="initialize_payment"),
     path('payment_verify/<str:reference>/', views.verify_payment, name="verify_payment"),
     path('webhook/paystack/', views.paystack_webhook, name='paystack_webhook'),
+    path('vendor/<int:pk>/orders/', views.vendor_orders, name='vendor_orders'),
 ]
