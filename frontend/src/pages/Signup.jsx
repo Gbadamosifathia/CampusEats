@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Mail, EyeOff, Store, FileText, Smartphone, User, ArrowRight, Loader } from 'lucide-react';
+import { Mail, Eye, EyeOff, Store, FileText, Smartphone, User, ArrowRight, Loader } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo.png';
 import './Signup.css';
 
@@ -8,7 +9,9 @@ const Signup = () => {
   const [accountType, setAccountType] = useState('vendor'); // 'student' or 'vendor'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   // Form State
   const [formData, setFormData] = useState({
@@ -47,7 +50,19 @@ const Signup = () => {
 
       const userData = await userRes.json();
       if (!userRes.ok) {
-        throw new Error(userData.detail || userData.email?.[0] || userData.username?.[0] || 'Signup failed');
+        let errMsg = 'Signup failed';
+        if (userData.detail) errMsg = userData.detail;
+        else if (userData.email) errMsg = `Email: ${userData.email[0]}`;
+        else if (userData.username) errMsg = `Username: ${userData.username[0]}`;
+        else if (typeof userData === 'object') {
+           const firstKey = Object.keys(userData)[0];
+           if (userData[firstKey] && Array.isArray(userData[firstKey])) {
+              errMsg = `${firstKey}: ${userData[firstKey][0]}`;
+           } else if (typeof userData[firstKey] === 'string') {
+              errMsg = userData[firstKey];
+           }
+        }
+        throw new Error(errMsg);
       }
 
       if (accountType === 'vendor') {
@@ -62,8 +77,7 @@ const Signup = () => {
         if (!loginRes.ok) throw new Error('Failed to authenticate for vendor setup');
 
         const accessToken = loginData.access;
-        localStorage.setItem('access_token', accessToken);
-        localStorage.setItem('refresh_token', loginData.refresh);
+        login(accessToken, loginData.refresh);
 
         // Step 3: Create Vendor Profile
         const vendorRes = await fetch('http://127.0.0.1:8000/api/vendor_list/', {
@@ -141,8 +155,22 @@ const Signup = () => {
         </div>
 
         <div className="input-group">
-          <input type="password" name="password" placeholder="Password" required value={formData.password} onChange={handleChange} />
-          <EyeOff size={20} className="input-icon" />
+          <input 
+            type={showPassword ? "text" : "password"} 
+            name="password" 
+            placeholder="Password" 
+            required 
+            value={formData.password} 
+            onChange={handleChange} 
+          />
+          <button 
+            type="button" 
+            className="password-toggle-btn" 
+            onClick={() => setShowPassword(!showPassword)}
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', position: 'absolute', right: '15px', color: '#8e8e93' }}
+          >
+            {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+          </button>
         </div>
 
         {accountType === 'vendor' && (

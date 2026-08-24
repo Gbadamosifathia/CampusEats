@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { Mail, EyeOff, ArrowRight, Loader, User } from 'lucide-react';
+import { Mail, Eye, EyeOff, ArrowRight, Loader, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo.png';
 import './Login.css';
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     username: '',
@@ -35,11 +38,20 @@ const Login = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || 'Invalid credentials');
+        let errMsg = 'Invalid credentials';
+        if (data.detail) errMsg = data.detail;
+        else if (typeof data === 'object') {
+           const firstKey = Object.keys(data)[0];
+           if (data[firstKey] && Array.isArray(data[firstKey])) {
+              errMsg = `${firstKey}: ${data[firstKey][0]}`;
+           } else if (typeof data[firstKey] === 'string') {
+              errMsg = data[firstKey];
+           }
+        }
+        throw new Error(errMsg);
       }
 
-      localStorage.setItem('access_token', data.access);
-      localStorage.setItem('refresh_token', data.refresh);
+      login(data.access, data.refresh);
       
       // Navigate to profile or home
       navigate('/profile');
@@ -76,14 +88,21 @@ const Login = () => {
 
           <div className="input-group">
             <input 
-              type="password" 
+              type={showPassword ? "text" : "password"} 
               name="password" 
               placeholder="Password" 
               required 
               value={formData.password} 
               onChange={handleChange} 
             />
-            <EyeOff size={20} className="input-icon" />
+            <button 
+              type="button" 
+              className="password-toggle-btn" 
+              onClick={() => setShowPassword(!showPassword)}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', position: 'absolute', right: '15px', color: '#8e8e93' }}
+            >
+              {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+            </button>
           </div>
 
           <button className="submit-btn login-btn" type="submit" disabled={loading}>

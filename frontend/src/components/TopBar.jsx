@@ -1,30 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Bell } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo.png';
 import './TopBar.css';
 
 function TopBar() {
-  const [firstName, setFirstName] = useState('');
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        try {
-          const res = await fetch('http://127.0.0.1:8000/api/me/', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setFirstName(data.first_name);
-          }
-        } catch (error) {
-          console.error("Failed to fetch user data", error);
-        }
-      }
-    };
-    fetchUser();
-  }, []);
+  const { user } = useAuth();
+  const firstName = user?.first_name || '';
 
   return (
     <header className="topbar">

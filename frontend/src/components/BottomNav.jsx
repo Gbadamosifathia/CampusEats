@@ -17,7 +17,10 @@ function BottomNav() {
           <Home size={24} />
           <span>Home</span>
         </button>
-        <button className="nav-item">
+        <button 
+          className={`nav-item ${location.pathname === '/search' ? 'active' : ''}`}
+          onClick={() => navigate('/search')}
+        >
           <Search size={24} />
           <span>Search</span>
         </button>

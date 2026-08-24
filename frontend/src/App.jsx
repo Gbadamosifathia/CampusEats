@@ -7,6 +7,7 @@ import RestaurantDetails from './pages/RestaurantDetails';
 import Profile from './pages/Profile';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
+import SearchPage from './pages/Search';
 import BottomNav from './components/BottomNav';
 
 const ProtectedRoute = ({ children }) => {
@@ -30,6 +31,7 @@ const MainLayout = () => {
         <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
         <Route path="/restaurant/:id" element={<ProtectedRoute><RestaurantDetails /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
         
         {/* Public Routes */}
         <Route path="/signup" element={<Signup />} />
@@ -40,13 +42,17 @@ const MainLayout = () => {
   );
 };
 
+import { AuthProvider } from './context/AuthContext';
+
 function App() {
   return (
-    <CartProvider>
-      <Router>
-        <MainLayout />
-      </Router>
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <MainLayout />
+        </Router>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 
