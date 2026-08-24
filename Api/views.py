@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from Eats.models import Vendor, MenuItem, Order, OrderItem, Payment
-from .serializers import VendorSerializers, MenuItemSerializers, OrderSerializers, OrderItemSerializers, SignupSerializers, PaymentSerializers
+from .serializers import VendorSerializers, MenuItemSerializers, OrderSerializers, OrderItemSerializers, SignupSerializers
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
