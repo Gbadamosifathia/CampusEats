@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Eye, EyeOff, ArrowRight, Loader, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 import logo from '../assets/logo.png';
 import './Login.css';
 
@@ -27,7 +28,7 @@ const Login = () => {
     setError('');
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/token/', {
+      const res = await fetch(`${API_URL}/api/token/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

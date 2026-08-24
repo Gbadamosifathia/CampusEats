@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Eye, EyeOff, Store, FileText, Smartphone, User, ArrowRight, Loader } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 import logo from '../assets/logo.png';
 import './Signup.css';
 
@@ -36,7 +37,7 @@ const Signup = () => {
 
     try {
       // Step 1: Create the User account
-      const userRes = await fetch('http://127.0.0.1:8000/api/signup/', {
+      const userRes = await fetch(`${API_URL}/api/signup/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -67,7 +68,7 @@ const Signup = () => {
 
       if (accountType === 'vendor') {
         // Step 2: Login to get token for vendor creation
-        const loginRes = await fetch('http://127.0.0.1:8000/api/token/', {
+        const loginRes = await fetch(`${API_URL}/api/token/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: formData.username, password: formData.password })
@@ -80,7 +81,7 @@ const Signup = () => {
         login(accessToken, loginData.refresh);
 
         // Step 3: Create Vendor Profile
-        const vendorRes = await fetch('http://127.0.0.1:8000/api/vendor_list/', {
+        const vendorRes = await fetch(`${API_URL}/api/vendor_list/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
