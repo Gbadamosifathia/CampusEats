@@ -6,6 +6,7 @@ class Vendor(models.Model):
     phone_number = models.CharField(max_length= 11)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     is_open = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
 
 class MenuItem(models.Model):
     name = models.CharField(max_length= 40)
