@@ -27,7 +27,7 @@ PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost,.onrender.com', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost,.onrender.com', cast=Csv()) + ['campuseats-cf7d.onrender.com']
 
 
 # Application definition
