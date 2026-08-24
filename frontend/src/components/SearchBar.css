@@ -7,15 +7,27 @@
   display: flex;
   align-items: center;
   background-color: #ffffff;
-  border-radius: 24px;
-  padding: 12px 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  border: 1px solid #f0f0f0;
+  border-radius: 28px;
+  padding: 14px 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.search-input-wrapper:focus-within {
+  border-color: #D9534F;
+  box-shadow: 0 4px 16px rgba(217, 83, 79, 0.15);
+  transform: translateY(-1px);
 }
 
 .search-icon {
   color: #6a5e5c;
   margin-right: 12px;
+  transition: color 0.3s ease;
+}
+
+.search-input-wrapper:focus-within .search-icon {
+  color: #D9534F;
 }
 
 .search-input {
