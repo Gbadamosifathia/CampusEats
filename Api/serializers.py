@@ -70,7 +70,7 @@ class SignupSerializers(serializers.ModelSerializer):
             )           
         return user
     
-    class PaymentSerializers(serializers.ModelSerializer):
-        class Meta:
-            model = Payment
-            fields = "__all__"
+class PaymentSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = "__all__"
