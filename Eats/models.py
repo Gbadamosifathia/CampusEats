@@ -20,7 +20,9 @@ class Order(models.Model):
     status = models.CharField(max_length= 10, choices=[
         ('Pending', 'Pending'),
         ('Paid', 'Paid'),
-        ('Preparing', 'Preparing')
+        ('Preparing', 'Preparing'),
+        ('Completed', 'Completed'),
+        ('Cancelled', 'Cancelled'),
     ])
     total_amount=models.DecimalField(max_digits=8, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -35,9 +37,9 @@ class Payment(models.Model):
     order = models.OneToOneField(Order, on_delete=models.PROTECT)
     reference = models.CharField(max_length=100, unique=True)
     status = models.CharField(max_length=10, choices=[
-        ('success', 'success'),
-        ('failed', 'failed'),
-        ('abandoned', 'abandoned'),
+        ('Success', 'Success'),
+        ('Failed', 'Failed'),
+        ('Abandoned', 'Abandoned'),
     ])
     amount = models.DecimalField(max_digits=9, decimal_places=2)
     verified_at = models.DateTimeField(null=True, blank=True)
