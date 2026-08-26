@@ -242,6 +242,8 @@ def paystack_webhook(request):
         return HttpResponse(status=405)
         
     paystack_signature = request.headers.get('x-paystack-signature')
+    if not paystack_signature:
+        return HttpResponse('Missing signature header', status=400)
     
     computed_signature = hmac.new(
         settings.PAYSTACK_SECRET_KEY.encode('utf-8'),

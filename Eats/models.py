@@ -37,6 +37,7 @@ class Payment(models.Model):
     order = models.OneToOneField(Order, on_delete=models.PROTECT)
     reference = models.CharField(max_length=100, unique=True)
     status = models.CharField(max_length=10, choices=[
+        ('Pending', "Pending"),
         ('Success', 'Success'),
         ('Failed', 'Failed'),
         ('Abandoned', 'Abandoned'),
