@@ -126,6 +126,34 @@ function Profile() {
     navigate('/login');
   };
 
+  const handleToggleOpen = async () => {
+    if (!vendorProfile) return;
+    const newStatus = !vendorProfile.is_open;
+    try {
+      const res = await fetch(`${API_URL}/api/vendor/${vendorProfile.id}/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: vendorProfile.name,
+          description: vendorProfile.description,
+          phone_number: vendorProfile.phone_number,
+          is_open: newStatus
+        })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setVendorProfile(updated);
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error toggling open status:", error);
+    }
+  };
+
   const handleAddDish = async (e) => {
     e.preventDefault();
     if (!vendorProfile) return;
@@ -222,7 +250,16 @@ function Profile() {
               </div>
               <div className="header-titles">
                 <h1 className="profile-title">{vendorProfile.name}</h1>
-                <p className="profile-subtitle">Vendor Dashboard</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <p className="profile-subtitle">Vendor Dashboard</p>
+                  <label className="toggle-switch">
+                    <input type="checkbox" checked={vendorProfile.is_open} onChange={handleToggleOpen} />
+                    <span className="slider round"></span>
+                  </label>
+                  <span style={{fontSize: '10px', fontWeight: 'bold', color: vendorProfile.is_open ? '#4caf50' : '#f44336'}}>
+                    {vendorProfile.is_open ? 'OPEN' : 'CLOSED'}
+                  </span>
+                </div>
               </div>
             </div>
             <img 
