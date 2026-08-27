@@ -2,54 +2,54 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 14px 20px;
   background-color: #fafafa;
 }
 
 .topbar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .logo-img {
-  width: 100px;
-  height: 100px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
 }
 
-.app-title {
-  font-size: 24px;
-  font-weight: 800;
-  color: #1a1a1a;
-  margin: 0;
-  letter-spacing: -0.5px;
+.greeting {
+  display: flex;
+  flex-direction: column;
 }
 
-.app-title span {
-  color: #D9534F;
+.greeting-sub {
+  font-size: 12px;
+  color: #8e8e93;
+  font-weight: 500;
 }
 
-.welcome-text {
-  font-size: 20px;
+.greeting-name {
+  font-size: 18px;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0;
   letter-spacing: -0.3px;
+  line-height: 1.2;
 }
 
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
 }
 
-.icon-btn {
+.topbar-icon-btn {
   background: #ffffff;
   border: 1px solid #f0f0f0;
   border-radius: 50%;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -58,28 +58,28 @@
   transition: all 0.2s ease;
 }
 
-.icon-btn:hover {
+.topbar-icon-btn:hover {
   background: #f8f8f8;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 
-.avatar {
-  width: 44px;
-  height: 44px;
+.topbar-avatar {
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   border: 2px solid #ffffff;
   cursor: pointer;
   transition: transform 0.2s ease;
 }
 
-.avatar:hover {
+.topbar-avatar:hover {
   transform: scale(1.05);
 }
 
-.avatar img {
+.topbar-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
