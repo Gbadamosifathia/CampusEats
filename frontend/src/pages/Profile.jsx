@@ -88,7 +88,7 @@ function Profile() {
             vendorIdRef.current = myVendor.id;
             
             // Fetch Vendor's Menu Items
-            const menuRes = await fetch(`${API_URL}/api/menuitems/?vendor=${myVendor.id}`, {
+            const menuRes = await fetch(`${API_URL}/api/menuitem_list/?vendor=${myVendor.id}`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
             if (menuRes.ok) {
@@ -158,7 +158,7 @@ function Profile() {
     setSavingDish(true);
     
     try {
-      const res = await fetch(`${API_URL}/api/menuitems/`, {
+      const res = await fetch(`${API_URL}/api/menuitem_list/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -211,7 +211,7 @@ function Profile() {
   const deleteMenuItem = async (dishId) => {
     if (!window.confirm("Are you sure you want to delete this dish?")) return;
     try {
-      const res = await fetch(`${API_URL}/api/menuitems/${dishId}/`, {
+      const res = await fetch(`${API_URL}/api/menuitem/${dishId}/`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

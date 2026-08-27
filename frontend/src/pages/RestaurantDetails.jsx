@@ -82,7 +82,7 @@ function RestaurantDetails() {
       try {
         const [vendorRes, menuRes] = await Promise.all([
           fetch(`${API_URL}/api/vendor/${numericId}/`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${API_URL}/api/menuitems/?vendor=${numericId}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_URL}/api/menuitem_list/?vendor=${numericId}`, { headers: { 'Authorization': `Bearer ${token}` } }),
         ]);
 
         if (vendorRes.ok) {
