@@ -90,10 +90,12 @@ function Home() {
   }, [token]);
 
   const filterRestaurants = (list) => {
+    if (!list) return [];
     return list.filter(r => {
       // Search text filter
-      const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            (r.subtitle && r.subtitle.toLowerCase().includes(searchQuery.toLowerCase()));
+      const titleMatch = r.title && r.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const subtitleMatch = r.subtitle && r.subtitle.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = titleMatch || subtitleMatch;
       
       // Category filter
       let matchesCategory = true;

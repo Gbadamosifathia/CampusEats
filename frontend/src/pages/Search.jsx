@@ -46,10 +46,11 @@ function SearchPage() {
   }, [token]);
 
   const filterRestaurants = (list) => {
-    if (!searchQuery.trim()) return [];
+    if (!searchQuery.trim() || !list) return [];
     return list.filter(r => {
-      return r.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-             (r.subtitle && r.subtitle.toLowerCase().includes(searchQuery.toLowerCase()));
+      const titleMatch = r.title && r.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const subtitleMatch = r.subtitle && r.subtitle.toLowerCase().includes(searchQuery.toLowerCase());
+      return titleMatch || subtitleMatch;
     });
   };
 
