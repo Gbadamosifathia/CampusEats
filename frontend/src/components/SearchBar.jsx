@@ -2,7 +2,7 @@ import React from 'react';
 import { Search } from 'lucide-react';
 import './SearchBar.css';
 
-function SearchBar() {
+function SearchBar({ value, onChange }) {
   return (
     <div className="search-container">
       <div className="search-input-wrapper">
@@ -11,6 +11,8 @@ function SearchBar() {
           type="text" 
           className="search-input" 
           placeholder="What are you craving?" 
+          value={value}
+          onChange={onChange}
         />
       </div>
     </div>

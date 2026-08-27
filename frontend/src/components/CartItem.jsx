@@ -13,7 +13,7 @@ function CartItem({ item }) {
       <div className="cart-item-details">
         <div className="cart-item-header">
           <h4 className="cart-item-title">{title}</h4>
-          <span className="cart-item-price">${price.toFixed(2)}</span>
+          <span className="cart-item-price">₦{Number(price).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
         </div>
         <p className="cart-item-subtitle">{subtitle}</p>
         <div className="cart-item-actions">

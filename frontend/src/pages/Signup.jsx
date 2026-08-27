@@ -36,17 +36,26 @@ const Signup = () => {
     setError('');
 
     try {
-      // Step 1: Create the User account
+      const payload = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password
+      };
+
+      if (accountType === 'vendor') {
+        payload.is_vendor = true;
+        payload.shop_name = formData.shopName;
+        payload.description = formData.shopDescription;
+        payload.phone_number = formData.phoneNumber;
+      }
+
+      // Step 1: Create User (and Vendor profile if applicable)
       const userRes = await fetch(`${API_URL}/api/signup/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          username: formData.username,
-          email: formData.email,
-          password: formData.password
-        })
+        body: JSON.stringify(payload)
       });
 
       const userData = await userRes.json();
@@ -66,40 +75,24 @@ const Signup = () => {
         throw new Error(errMsg);
       }
 
+      // Step 2: Auto Login for all users
+      const loginRes = await fetch(`${API_URL}/api/token/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: formData.username, password: formData.password })
+      });
+
+      const loginData = await loginRes.json();
+      if (!loginRes.ok) throw new Error('Signup successful, but failed to automatically log in.');
+
+      const accessToken = loginData.access;
+      login(accessToken, loginData.refresh);
+
+      // Step 3: Navigate based on account type
       if (accountType === 'vendor') {
-        // Step 2: Login to get token for vendor creation
-        const loginRes = await fetch(`${API_URL}/api/token/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: formData.username, password: formData.password })
-        });
-
-        const loginData = await loginRes.json();
-        if (!loginRes.ok) throw new Error('Failed to authenticate for vendor setup');
-
-        const accessToken = loginData.access;
-        login(accessToken, loginData.refresh);
-
-        // Step 3: Create Vendor Profile
-        const vendorRes = await fetch(`${API_URL}/api/vendor_list/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({
-            shop_name: formData.shopName,
-            description: formData.shopDescription,
-            contact_email: formData.email,
-            contact_phone: formData.phoneNumber
-          })
-        });
-
-        if (!vendorRes.ok) throw new Error('Failed to create vendor profile');
         navigate('/profile');
       } else {
-        // Direct to login for student
-        navigate('/login');
+        navigate('/');
       }
     } catch (err) {
       setError(err.message);

@@ -44,10 +44,9 @@ export function CartProvider({ children }) {
   };
 
   const cartTotalItems = useMemo(() => cartItems.reduce((acc, item) => acc + item.quantity, 0), [cartItems]);
+  // No delivery fee (campus pickup) and no tax
   const cartSubtotal = useMemo(() => cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0), [cartItems]);
-  const deliveryFee = cartTotalItems > 0 ? 2.99 : 0;
-  const tax = cartSubtotal * 0.09;
-  const cartTotal = cartSubtotal + deliveryFee + tax;
+  const cartTotal = cartSubtotal;
 
   const value = {
     cartItems,
@@ -58,9 +57,7 @@ export function CartProvider({ children }) {
     clearCart,
     cartTotalItems,
     cartSubtotal,
-    deliveryFee,
-    tax,
-    cartTotal
+    cartTotal,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

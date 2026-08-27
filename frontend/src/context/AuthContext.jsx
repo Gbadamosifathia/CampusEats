@@ -20,9 +20,11 @@ export const AuthProvider = ({ children }) => {
           if (res.ok) {
             const data = await res.json();
             setUser(data);
-          } else {
-            // Token might be invalid or expired
+          } else if (res.status === 401) {
+            // Token is definitively invalid or expired
             logout();
+          } else {
+            console.error("Failed to fetch user data, server returned:", res.status);
           }
         } catch (error) {
           console.error("Failed to fetch user data", error);
