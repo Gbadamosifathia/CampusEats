@@ -354,7 +354,7 @@ function Profile() {
                   <>
                     <div className="pane-header">
                       <h2>Your Menu</h2>
-                      <button className="add-btn" onClick={() => setShowAddDish(true)}>
+                      <button className="vendor-add-dish-btn" onClick={() => setShowAddDish(true)}>
                         <Plus size={18} /> Add Dish
                       </button>
                     </div>
