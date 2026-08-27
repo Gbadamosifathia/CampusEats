@@ -137,9 +137,7 @@ function Profile() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          name: vendorProfile.name,
-          description: vendorProfile.description,
-          phone_number: vendorProfile.phone_number,
+          ...vendorProfile,
           is_open: newStatus
         })
       });
