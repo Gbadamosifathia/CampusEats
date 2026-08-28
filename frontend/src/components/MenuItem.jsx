@@ -10,12 +10,14 @@ function MenuItem({ item, onAdd }) {
       <div className="menu-item-grid">
         <div className="grid-image-container">
           <img src={image} alt={title} className="grid-image" />
-          <button className="add-btn grid-add-btn" onClick={() => onAdd(item)}>
-            <Plus size={16} color="#b03a25" />
-          </button>
         </div>
         <h4 className="grid-title">{title}</h4>
-        <span className="grid-price">${price.toFixed(2)}</span>
+        <div className="menu-item-action-row">
+          <span className="grid-price">₦{price.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
+          <button className="add-to-cart-btn" onClick={() => onAdd(item)}>
+            <Plus size={14} /> Add
+          </button>
+        </div>
       </div>
     );
   }
@@ -29,13 +31,15 @@ function MenuItem({ item, onAdd }) {
           {isPopular && <span className="popular-badge">Popular</span>}
         </div>
         <p className="menu-item-desc">{description}</p>
-        <span className="menu-item-price">${price.toFixed(2)}</span>
+        <div className="menu-item-action-row">
+          <span className="menu-item-price">₦{price.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
+          <button className="add-to-cart-btn" onClick={() => onAdd(item)}>
+            <Plus size={14} /> Add to cart
+          </button>
+        </div>
       </div>
       <div className="menu-item-image-wrapper">
         <img src={image} alt={title} className="menu-item-image" />
-        <button className="add-btn list-add-btn" onClick={() => onAdd(item)}>
-          <Plus size={16} color="#b03a25" />
-        </button>
       </div>
     </div>
   );

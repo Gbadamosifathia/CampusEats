@@ -1,5 +1,5 @@
 .restaurant-details-page {
-  background-color: #fafafa;
+  background-color: var(--bg-primary);
   min-height: 100vh;
   padding-bottom: 100px;
 }
@@ -8,7 +8,8 @@
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  background-color: #ffffff;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 20;
@@ -22,12 +23,13 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  color: var(--text-primary);
 }
 
 .rd-title {
   font-size: 18px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0 0 0 12px;
 }
 
@@ -92,8 +94,8 @@
   display: flex;
   overflow-x: auto;
   padding: 16px 20px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #f0f0f0;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
   gap: 12px;
   scrollbar-width: none;
 }
@@ -103,19 +105,21 @@
 }
 
 .rd-cat-pill {
-  background-color: #f5f5f5;
+  background-color: var(--bg-input);
   border: none;
   border-radius: 20px;
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 500;
-  color: #6a5e5c;
+  font-family: 'Poppins', sans-serif;
+  color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
+  transition: all 0.2s ease;
 }
 
 .rd-cat-pill.active {
-  background-color: #b03a25;
+  background: var(--accent-gradient);
   color: #ffffff;
 }
 
@@ -130,7 +134,7 @@
 .menu-section-title {
   font-size: 18px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0 0 16px 0;
 }
 
@@ -151,14 +155,14 @@
   left: 0;
   width: 100%;
   padding: 16px 20px 24px 20px;
-  background-color: #ffffff;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+  background-color: var(--bg-secondary);
+  box-shadow: 0 -4px 20px var(--shadow-md);
+  border-top: 1px solid var(--border);
   z-index: 200;
 }
 
 @media (min-width: 600px) {
   .rd-bottom-cart-wrapper {
-    width: 100%;
     max-width: 1200px;
     left: 50%;
     transform: translateX(-50%);
@@ -171,7 +175,7 @@
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 16px;
   }
-  
+
   .menu-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
@@ -179,7 +183,7 @@
 
 .rd-view-cart-btn {
   width: 100%;
-  background-color: #b03a25;
+  background: var(--accent-gradient);
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -188,6 +192,8 @@
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 4px 12px var(--accent-shadow);
 }
 
 .cart-count {

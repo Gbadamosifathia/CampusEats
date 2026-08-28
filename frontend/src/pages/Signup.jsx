@@ -4,26 +4,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 import logo from '../assets/logo.png';
+import './Login.css';
 import './Signup.css';
 
 const Signup = () => {
-  const [accountType, setAccountType] = useState('vendor'); // 'student' or 'vendor'
+  const [accountType, setAccountType] = useState('student');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // Form State
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    username: '',
-    email: '',
-    password: '',
-    shopName: '',
-    shopDescription: '',
-    phoneNumber: '',
+    firstName: '', lastName: '', username: '', email: '',
+    password: '', shopName: '', shopDescription: '', phoneNumber: '',
   });
 
   const handleChange = (e) => {
@@ -51,7 +45,6 @@ const Signup = () => {
         payload.phone_number = formData.phoneNumber;
       }
 
-      // Step 1: Create User (and Vendor profile if applicable)
       const userRes = await fetch(`${API_URL}/api/signup/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -75,7 +68,6 @@ const Signup = () => {
         throw new Error(errMsg);
       }
 
-      // Step 2: Auto Login for all users
       const loginRes = await fetch(`${API_URL}/api/token/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,17 +75,10 @@ const Signup = () => {
       });
 
       const loginData = await loginRes.json();
-      if (!loginRes.ok) throw new Error('Signup successful, but failed to automatically log in.');
+      if (!loginRes.ok) throw new Error('Signup successful, but auto-login failed.');
 
-      const accessToken = loginData.access;
-      login(accessToken, loginData.refresh);
-
-      // Step 3: Navigate based on account type
-      if (accountType === 'vendor') {
-        navigate('/profile');
-      } else {
-        navigate('/');
-      }
+      login(loginData.access, loginData.refresh);
+      navigate(accountType === 'vendor' ? '/profile' : '/');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -102,98 +87,110 @@ const Signup = () => {
   };
 
   return (
-    <div className="signup-container">
-      <div className="signup-header slide-up">
-        <img src={logo} alt="CampusEats Logo" className="auth-logo" />
-        <h1>Create an Account</h1>
-        <p>Join the campus food network.</p>
+    <div className="auth-page">
+      {/* Food doodle background */}
+      <div className="doodle-bg" aria-hidden="true">
+        {['🍕','🍔','☕','🍜','🍩','🥗','🌮','🧃','🍱','🥪','🍣','🥤','🍟','🧆','🍛'].map((emoji, i) => (
+          <span key={i} className="doodle-item" style={{ '--i': i }}>{emoji}</span>
+        ))}
       </div>
+      <div className="auth-overlay" />
 
-      <div className="account-type-toggle slide-up-delay-1">
-        <button
-          type="button"
-          className={`toggle-btn ${accountType === 'student' ? 'active-student' : ''}`}
-          onClick={() => setAccountType('student')}
-        >
-          Student
-        </button>
-        <button
-          type="button"
-          className={`toggle-btn ${accountType === 'vendor' ? 'active-vendor' : ''}`}
-          onClick={() => setAccountType('vendor')}
-        >
-          Campus Vendor
-        </button>
-      </div>
-
-      {error && <div className="error-message slide-up">{error}</div>}
-
-      <form className="signup-form slide-up-delay-2" onSubmit={handleSignup}>
-        <div className="input-row">
-          <div className="input-group">
-            <input type="text" name="firstName" placeholder="First Name" required value={formData.firstName} onChange={handleChange} />
-          </div>
-          <div className="input-group">
-            <input type="text" name="lastName" placeholder="Last Name" required value={formData.lastName} onChange={handleChange} />
-          </div>
+      <div className="auth-card slide-up" style={{ maxWidth: '420px' }}>
+        <div className="auth-card-header">
+          <img src={logo} alt="CampusEats" className="auth-logo" />
+          <h1>Create account</h1>
+          <p>Join the campus food network</p>
         </div>
 
-        <div className="input-group">
-          <input type="text" name="username" placeholder="Username" required value={formData.username} onChange={handleChange} />
-          <User size={20} className="input-icon" />
-        </div>
-
-        <div className="input-group">
-          <input type="email" name="email" placeholder={accountType === 'student' ? "Email" : "Email"} required value={formData.email} onChange={handleChange} />
-          <Mail size={20} className="input-icon" />
-        </div>
-
-        <div className="input-group">
-          <input 
-            type={showPassword ? "text" : "password"} 
-            name="password" 
-            placeholder="Password" 
-            required 
-            value={formData.password} 
-            onChange={handleChange} 
-          />
-          <button 
-            type="button" 
-            className="password-toggle-btn" 
-            onClick={() => setShowPassword(!showPassword)}
-            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', position: 'absolute', right: '15px', color: '#8e8e93' }}
+        {/* Account type toggle */}
+        <div className="signup-type-toggle">
+          <button
+            type="button"
+            className={`signup-type-btn ${accountType === 'student' ? 'active' : ''}`}
+            onClick={() => setAccountType('student')}
           >
-            {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+            🎓 Student
+          </button>
+          <button
+            type="button"
+            className={`signup-type-btn vendor ${accountType === 'vendor' ? 'active-vendor' : ''}`}
+            onClick={() => setAccountType('vendor')}
+          >
+            🏪 Campus Vendor
           </button>
         </div>
 
-        {accountType === 'vendor' && (
-          <div className="vendor-fields slide-down">
-            <div className="input-group">
-              <input type="text" name="shopName" placeholder="Shop Name" required value={formData.shopName} onChange={handleChange} />
-              <Store size={20} className="input-icon" />
+        {error && <div className="auth-error shake">{error}</div>}
+
+        <form className="auth-form" onSubmit={handleSignup}>
+          <div className="signup-name-row">
+            <div className="auth-input-group">
+              <User size={16} className="auth-input-icon" />
+              <input type="text" name="firstName" placeholder="First name" required value={formData.firstName} onChange={handleChange} />
             </div>
-            <div className="input-group">
-              <input type="text" name="shopDescription" placeholder="Shop Description" required value={formData.shopDescription} onChange={handleChange} />
-              <FileText size={20} className="input-icon" />
-            </div>
-            <div className="input-group">
-              <input type="tel" name="phoneNumber" placeholder="Phone Number" required value={formData.phoneNumber} onChange={handleChange} />
-              <Smartphone size={20} className="input-icon" />
+            <div className="auth-input-group">
+              <input type="text" name="lastName" placeholder="Last name" required value={formData.lastName} onChange={handleChange} style={{ paddingLeft: '16px' }} />
             </div>
           </div>
-        )}
 
-        <button className={`submit-btn ${accountType === 'vendor' ? 'vendor-btn' : 'student-btn'}`} type="submit" disabled={loading}>
-          {loading ? <Loader className="spin" size={20} /> : (
-            <>{accountType === 'vendor' ? 'Create Vendor Account' : 'Create Account'} <ArrowRight size={20} /></>
+          <div className="auth-input-group">
+            <User size={18} className="auth-input-icon" />
+            <input type="text" name="username" placeholder="Username" required value={formData.username} onChange={handleChange} />
+          </div>
+
+          <div className="auth-input-group">
+            <Mail size={18} className="auth-input-icon" />
+            <input type="email" name="email" placeholder="Email address" required value={formData.email} onChange={handleChange} />
+          </div>
+
+          <div className="auth-input-group">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              placeholder="Password"
+              required
+              value={formData.password}
+              onChange={handleChange}
+              style={{ paddingLeft: '16px' }}
+            />
+            <button type="button" className="auth-eye-btn" onClick={() => setShowPassword(!showPassword)}>
+              {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+            </button>
+          </div>
+
+          {accountType === 'vendor' && (
+            <div className="vendor-fields slide-down">
+              <div className="auth-input-group">
+                <Store size={18} className="auth-input-icon" />
+                <input type="text" name="shopName" placeholder="Shop name" required value={formData.shopName} onChange={handleChange} />
+              </div>
+              <div className="auth-input-group">
+                <FileText size={18} className="auth-input-icon" />
+                <input type="text" name="shopDescription" placeholder="Shop description" required value={formData.shopDescription} onChange={handleChange} />
+              </div>
+              <div className="auth-input-group">
+                <Smartphone size={18} className="auth-input-icon" />
+                <input type="tel" name="phoneNumber" placeholder="Phone number" required value={formData.phoneNumber} onChange={handleChange} />
+              </div>
+            </div>
           )}
-        </button>
-      </form>
 
-      <p className="login-link slide-up-delay-3">
-        Already have an account? <Link to="/login">Log in</Link>
-      </p>
+          <button
+            className={`auth-submit-btn ${accountType === 'vendor' ? '' : 'student-submit'}`}
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? <Loader className="spin" size={20} /> : (
+              <>{accountType === 'vendor' ? 'Create Vendor Account' : 'Create Account'} <ArrowRight size={18} /></>
+            )}
+          </button>
+        </form>
+
+        <p className="auth-link">
+          Already have an account? <Link to="/login">Log in</Link>
+        </p>
+      </div>
     </div>
   );
 };

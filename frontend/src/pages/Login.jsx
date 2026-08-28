@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Eye, EyeOff, ArrowRight, Loader, User } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Loader, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
@@ -53,8 +53,6 @@ const Login = () => {
       }
 
       login(data.access, data.refresh);
-      
-      // Navigate to profile or home
       navigate('/profile');
     } catch (err) {
       setError(err.message);
@@ -64,56 +62,67 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-box slide-up">
-        <div className="login-header">
-          <img src={logo} alt="CampusEats Logo" className="auth-logo pulse-logo" />
-          <h1>Welcome Back!</h1>
-          <p>Sign in to continue to your account.</p>
+    <div className="auth-page">
+      {/* Food doodle background */}
+      <div className="doodle-bg" aria-hidden="true">
+        {['🍕','🍔','☕','🍜','🍩','🥗','🌮','🧃','🍱','🥪','🍣','🥤','🍟','🧆','🍛'].map((emoji, i) => (
+          <span key={i} className="doodle-item" style={{ '--i': i }}>{emoji}</span>
+        ))}
+      </div>
+
+      {/* Gradient overlay */}
+      <div className="auth-overlay" />
+
+      {/* Card */}
+      <div className="auth-card slide-up">
+        <div className="auth-card-header">
+          <img src={logo} alt="CampusEats" className="auth-logo" />
+          <h1>Welcome back</h1>
+          <p>Sign in to continue ordering</p>
         </div>
 
-        {error && <div className="error-message shake">{error}</div>}
+        {error && <div className="auth-error shake">{error}</div>}
 
-        <form className="login-form slide-up-delay-1" onSubmit={handleLogin}>
-          <div className="input-group">
-            <input 
-              type="text" 
-              name="username" 
-              placeholder="Username" 
-              required 
-              value={formData.username} 
-              onChange={handleChange} 
+        <form className="auth-form" onSubmit={handleLogin}>
+          <div className="auth-input-group">
+            <User size={18} className="auth-input-icon" />
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              required
+              value={formData.username}
+              onChange={handleChange}
             />
-            <User size={20} className="input-icon" />
           </div>
 
-          <div className="input-group">
-            <input 
-              type={showPassword ? "text" : "password"} 
-              name="password" 
-              placeholder="Password" 
-              required 
-              value={formData.password} 
-              onChange={handleChange} 
+          <div className="auth-input-group">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              placeholder="Password"
+              required
+              value={formData.password}
+              onChange={handleChange}
+              style={{ paddingLeft: '16px' }}
             />
-            <button 
-              type="button" 
-              className="password-toggle-btn" 
+            <button
+              type="button"
+              className="auth-eye-btn"
               onClick={() => setShowPassword(!showPassword)}
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', position: 'absolute', right: '15px', color: '#8e8e93' }}
             >
-              {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+              {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
             </button>
           </div>
 
-          <button className="submit-btn login-btn" type="submit" disabled={loading}>
+          <button className="auth-submit-btn" type="submit" disabled={loading}>
             {loading ? <Loader className="spin" size={20} /> : (
-              <>Sign In <ArrowRight size={20} /></>
+              <>Sign In <ArrowRight size={18} /></>
             )}
           </button>
         </form>
 
-        <p className="signup-link slide-up-delay-2">
+        <p className="auth-link">
           Don't have an account? <Link to="/signup">Sign up</Link>
         </p>
       </div>

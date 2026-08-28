@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, MapPin, CreditCard, Bell, HelpCircle, LogOut, ChevronRight, Camera, Save, Plus, Edit2, Trash2, Package, CheckCircle, Clock, FileText, RefreshCw } from 'lucide-react';
+import { User, MapPin, CreditCard, Bell, HelpCircle, LogOut, ChevronRight, Camera, Save, Plus, Edit2, Trash2, Package, CheckCircle, Clock, FileText, RefreshCw, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
@@ -16,6 +17,7 @@ const parseJwt = (token) => {
 
 function Profile() {
   const { user, token, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   
   // Data States
@@ -36,7 +38,9 @@ function Profile() {
     name: '',
     price: '',
     description: '',
-    is_available: true
+    is_available: true,
+    image: null,
+    imagePreview: null
   });
   const [savingDish, setSavingDish] = useState(false);
 
@@ -152,32 +156,46 @@ function Profile() {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setDishForm({
+        ...dishForm,
+        image: file,
+        imagePreview: URL.createObjectURL(file)
+      });
+    }
+  };
+
   const handleAddDish = async (e) => {
     e.preventDefault();
     if (!vendorProfile) return;
     setSavingDish(true);
     
     try {
+      const formData = new FormData();
+      formData.append('vendor', vendorProfile.id);
+      formData.append('name', dishForm.name);
+      formData.append('price', dishForm.price);
+      formData.append('description', dishForm.description);
+      formData.append('is_available', dishForm.is_available);
+      if (dishForm.image) {
+        formData.append('image', dishForm.image);
+      }
+
       const res = await fetch(`${API_URL}/api/menuitem_list/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          vendor: vendorProfile.id,
-          name: dishForm.name,
-          price: dishForm.price,
-          description: dishForm.description,
-          is_available: dishForm.is_available
-        })
+        body: formData
       });
 
       if (res.ok) {
         const newDish = await res.json();
         setMenuItems([...menuItems, newDish]);
         setShowAddDish(false);
-        setDishForm({ name: '', price: '', description: '', is_available: true });
+        setDishForm({ name: '', price: '', description: '', is_available: true, image: null, imagePreview: null });
       } else {
         alert("Failed to add dish.");
       }
@@ -396,9 +414,22 @@ function Profile() {
                     <form onSubmit={handleAddDish}>
                       <div className="form-group">
                         <label>Dish Photo</label>
-                        <div className="upload-box">
-                          <Camera size={32} color="#a03500" />
-                          <span className="upload-text">Upload Dish Photo</span>
+                        <div className="upload-box" onClick={() => document.getElementById('dish-image-input').click()}>
+                          {dishForm.imagePreview ? (
+                            <img src={dishForm.imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
+                          ) : (
+                            <>
+                              <Camera size={32} color="#a03500" />
+                              <span className="upload-text">Upload Dish Photo</span>
+                            </>
+                          )}
+                          <input 
+                            id="dish-image-input" 
+                            type="file" 
+                            accept="image/*" 
+                            style={{ display: 'none' }} 
+                            onChange={handleImageChange} 
+                          />
                         </div>
                       </div>
 
@@ -464,7 +495,19 @@ function Profile() {
                     <input type="text" value={vendorProfile?.phone_number || ''} readOnly />
                   </div>
                   
-                  <button className="settings-item logout-btn" onClick={handleLogout} style={{marginTop: '20px'}}>
+                  {/* Dark mode toggle */}
+                  <div className="settings-item" style={{marginTop: '8px'}}>
+                    <div className="settings-item-left">
+                      <span className="settings-icon">{theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}</span>
+                      <span className="settings-item-title">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                    </div>
+                    <label className="toggle-switch">
+                      <input type="checkbox" checked={theme === 'dark'} onChange={toggleTheme} />
+                      <span className="slider round"></span>
+                    </label>
+                  </div>
+
+                  <button className="settings-item logout-btn" onClick={handleLogout} style={{marginTop: '8px'}}>
                     <div className="settings-item-left">
                       <span className="settings-icon"><LogOut size={20} /></span>
                       <span className="settings-item-title">Log Out</span>
@@ -505,6 +548,18 @@ function Profile() {
               </button>
             ))}
             
+            {/* Dark mode toggle */}
+            <div className="settings-item">
+              <div className="settings-item-left">
+                <span className="settings-icon">{theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}</span>
+                <span className="settings-item-title">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+              </div>
+              <label className="toggle-switch">
+                <input type="checkbox" checked={theme === 'dark'} onChange={toggleTheme} />
+                <span className="slider round"></span>
+              </label>
+            </div>
+
             <button className="settings-item logout-btn" onClick={handleLogout}>
               <div className="settings-item-left">
                 <span className="settings-icon"><LogOut size={20} /></span>

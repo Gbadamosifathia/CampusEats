@@ -63,12 +63,13 @@ function SearchPage() {
 
   return (
     <>
-      <TopBar />
-      <div className="search-page-container">
+      <TopBar>
         <SearchBar 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
+      </TopBar>
+      <div className="search-page-container">
         
         <div className="search-content">
           {!searchQuery.trim() ? (

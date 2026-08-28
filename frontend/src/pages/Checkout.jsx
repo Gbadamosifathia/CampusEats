@@ -19,8 +19,15 @@ function Checkout() {
     setLoading(true);
     setError('');
 
+    // Prevent checkout for mock restaurants (IDs >= 1000)
+    if (parseInt(restaurantId, 10) >= 1000) {
+      setError('Checkout is disabled for demo/mock restaurants. Please order from a real Campus Vendor!');
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Step 1: Create the order
+      // Step 1: Create the order (Backend now handles items and totals automatically)
       const orderRes = await fetch(`${API_URL}/api/order_list/`, {
         method: 'POST',
         headers: {
@@ -29,35 +36,22 @@ function Checkout() {
         },
         body: JSON.stringify({
           vendor: restaurantId,
-          total_amount: cartTotal,
-          status: 'Pending',
+          items: cartItems.map(item => ({
+            menu_item: item.id,
+            quantity: item.quantity
+          }))
         }),
       });
 
       if (!orderRes.ok) {
-        const err = await orderRes.json();
-        throw new Error(err.detail || 'Failed to create order.');
+        let errMessage = 'Failed to create order.';
+        try {
+          const err = await orderRes.json();
+          errMessage = err.detail || JSON.stringify(err);
+        } catch(e) {}
+        throw new Error(errMessage);
       }
       const order = await orderRes.json();
-
-      // Step 2: Create all order items
-      await Promise.all(
-        cartItems.map(item =>
-          fetch(`${API_URL}/api/orderitem_list/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              order: order.id,
-              menu_item: item.id,
-              quantity: item.quantity,
-              price_per_order: item.price,
-            }),
-          })
-        )
-      );
 
       // Step 3: Initialize Paystack payment
       const payRes = await fetch(`${API_URL}/api/payment/initialize/${order.id}/`, {

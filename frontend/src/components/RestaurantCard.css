@@ -1,8 +1,8 @@
 .restaurant-card {
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-md);
   margin-bottom: 20px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
@@ -10,7 +10,7 @@
 
 .restaurant-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.1);
 }
 
 .card-image-container {
@@ -61,20 +61,12 @@
 }
 
 .status-dot.open {
-  background-color: #D9534F;
-  box-shadow: 0 0 6px rgba(217, 83, 79, 0.6);
+  background-color: #4caf50;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
 }
 
 .status-dot.closed {
   background-color: #8E8E93;
-}
-
-.status-text {
-  color: #1c1c1e;
-}
-
-.rating-text {
-  color: #1c1c1e;
 }
 
 .favorite-btn {
@@ -99,7 +91,7 @@
 .favorite-btn:hover {
   background-color: #fff;
   transform: scale(1.1);
-  color: #D9534F;
+  color: var(--accent);
 }
 
 .card-content {
@@ -109,14 +101,14 @@
 .card-title {
   font-size: 18px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0 0 6px 0;
   letter-spacing: -0.3px;
 }
 
 .card-subtitle {
   font-size: 14px;
-  color: #6a5e5c;
+  color: var(--text-secondary);
   margin: 0 0 16px 0;
   font-weight: 500;
 }
@@ -127,7 +119,7 @@
 }
 
 .info-chip {
-  background-color: #f7f7f8;
+  background-color: var(--bg-input);
   border-radius: 8px;
   padding: 6px 10px;
   display: flex;
@@ -135,5 +127,5 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: #4a4a4c;
+  color: var(--text-secondary);
 }

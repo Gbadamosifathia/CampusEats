@@ -1,5 +1,5 @@
 .ot-page {
-  background: linear-gradient(180deg, #fff7f4 0%, #fafafa 40%);
+  background: var(--bg-primary);
   min-height: 100vh;
   padding-bottom: 40px;
 }
@@ -11,15 +11,15 @@
   justify-content: center;
   min-height: 80vh;
   gap: 16px;
-  color: #888;
+  color: var(--text-muted);
   font-size: 15px;
 }
 
 .ot-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #f0f0f0;
-  border-top-color: #a03500;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -29,15 +29,15 @@
 .ot-error button {
   margin-top: 12px;
   padding: 10px 24px;
-  background: #a03500;
+  background: var(--accent-gradient);
   color: white;
   border: none;
   border-radius: 20px;
   font-size: 14px;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
 }
 
-/* Header */
 .ot-header {
   display: flex;
   align-items: center;
@@ -46,7 +46,7 @@
 }
 
 .ot-back-btn {
-  background: #f5f5f5;
+  background: var(--bg-input);
   border: none;
   border-radius: 50%;
   width: 38px;
@@ -55,16 +55,16 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  color: var(--text-primary);
 }
 
 .ot-header h1 {
   font-size: 18px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
 }
 
-/* Estimated time */
 .ot-estimated {
   text-align: center;
   padding: 10px 20px 0;
@@ -74,7 +74,7 @@
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.5px;
-  color: #a03500;
+  color: var(--accent);
   margin: 0 0 4px;
   text-transform: uppercase;
 }
@@ -82,15 +82,15 @@
 .ot-time {
   font-size: 38px;
   font-weight: 800;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0 0 10px;
   letter-spacing: -1px;
 }
 
 .ot-status-pill {
   display: inline-block;
-  background: #fff0e8;
-  color: #a03500;
+  background: var(--bg-accent);
+  color: var(--accent);
   font-size: 13px;
   font-weight: 600;
   padding: 6px 18px;
@@ -98,7 +98,6 @@
   margin-bottom: 4px;
 }
 
-/* Bag */
 .ot-bag-wrapper {
   display: flex;
   justify-content: center;
@@ -109,16 +108,15 @@
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  background: radial-gradient(circle, #ffe4d0 0%, #fafafa 70%);
+  background: radial-gradient(circle, var(--bg-accent) 0%, var(--bg-primary) 70%);
   display: flex;
   align-items: center;
   justify-content: center;
   animation: floatBag 3s ease-in-out infinite;
-  transition: background 0.5s ease;
 }
 
 .ot-bag-glow.ready {
-  background: radial-gradient(circle, #d4fce4 0%, #fafafa 70%);
+  background: radial-gradient(circle, #d4fce4 0%, var(--bg-primary) 70%);
 }
 
 .ot-bag-emoji {
@@ -132,13 +130,12 @@
   50% { transform: translateY(-10px); }
 }
 
-/* Steps */
 .ot-steps {
   margin: 8px 24px 0;
   padding: 20px;
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-md);
 }
 
 .ot-step {
@@ -162,11 +159,11 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #f0f0f0;
+  background: var(--bg-input);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #aaa;
+  color: var(--text-muted);
   flex-shrink: 0;
   transition: background 0.3s, color 0.3s;
 }
@@ -177,16 +174,16 @@
 }
 
 .ot-step-icon.active {
-  background: #fff0e8;
-  color: #a03500;
-  box-shadow: 0 0 0 4px rgba(160,53,0,0.1);
+  background: var(--bg-accent);
+  color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-shadow);
 }
 
 .ot-step-line {
   width: 2px;
   flex: 1;
   min-height: 28px;
-  background: #f0f0f0;
+  background: var(--border);
   margin: 4px 0;
   transition: background 0.3s;
 }
@@ -203,27 +200,26 @@
   margin: 0;
   font-size: 15px;
   font-weight: 600;
-  color: #444;
+  color: var(--text-secondary);
   transition: color 0.3s;
 }
 
 .ot-step-label.active {
-  color: #1c1c1e;
+  color: var(--text-primary);
 }
 
 .ot-step-desc {
   margin: 4px 0 0;
   font-size: 13px;
-  color: #a03500;
+  color: var(--accent);
 }
 
-/* Receipt */
 .ot-receipt {
   margin: 20px 24px 0;
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 16px 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .ot-receipt-header {
@@ -236,15 +232,15 @@
 .ot-order-id {
   font-size: 13px;
   font-weight: 700;
-  color: #888;
+  color: var(--text-muted);
   letter-spacing: 0.5px;
 }
 
 .ot-receipt-tag {
   font-size: 11px;
   font-weight: 700;
-  color: #a03500;
-  background: #fff0e8;
+  color: var(--accent);
+  background: var(--bg-accent);
   padding: 3px 10px;
   border-radius: 10px;
   letter-spacing: 0.3px;
@@ -255,16 +251,15 @@
   justify-content: space-between;
   align-items: center;
   font-size: 15px;
-  color: #444;
+  color: var(--text-secondary);
 }
 
 .ot-amount {
   font-size: 18px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
 }
 
-/* Refresh hint */
 .ot-refresh-hint {
   display: flex;
   align-items: center;
@@ -272,5 +267,5 @@
   gap: 6px;
   margin-top: 16px;
   font-size: 12px;
-  color: #bbb;
+  color: var(--text-muted);
 }

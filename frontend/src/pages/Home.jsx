@@ -53,7 +53,7 @@ export const FEATURED_RESTAURANTS = [
 ];
 
 function Home() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [realVendors, setRealVendors] = useState([]);
   const [loadingVendors, setLoadingVendors] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -119,17 +119,25 @@ function Home() {
 
   return (
     <>
-      <TopBar />
-      <SearchBar 
-        value={searchQuery} 
-        onChange={(e) => setSearchQuery(e.target.value)} 
-      />
+      <TopBar>
+        <SearchBar 
+          value={searchQuery} 
+          onChange={(e) => setSearchQuery(e.target.value)} 
+        />
+      </TopBar>
       <CategoryFilter 
         activeCategory={activeCategory} 
         onCategoryChange={setActiveCategory} 
       />
 
       <main className="main-content">
+        <div className="home-greeting" style={{ marginTop: '10px', marginBottom: '24px' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: '800', letterSpacing: '-0.5px' }}>
+            {user?.first_name ? `Good morning, ${user.first_name}!` : 'Good morning!'}
+          </h1>
+          <p style={{ color: 'var(--text-muted)' }}>Ready for some good food?</p>
+        </div>
+        
         {/* Featured / Hardcoded Section */}
         <div className="section-header">
           <h2>Campus Favorites</h2>
@@ -141,7 +149,7 @@ function Home() {
               <RestaurantCard key={restaurant.id} data={restaurant} />
             ))
           ) : (
-            <p style={{ padding: '0 20px', color: '#aaa', fontSize: '14px' }}>No favorites match your search.</p>
+            <p style={{ padding: '0 20px', color: 'var(--text-muted)', fontSize: '14px' }}>No favorites match your search.</p>
           )}
         </div>
 
@@ -150,9 +158,9 @@ function Home() {
           <h2>Campus Vendors</h2>
         </div>
         {loadingVendors ? (
-          <p style={{ padding: '0 20px', color: '#aaa', fontSize: '14px' }}>Loading vendors...</p>
+          <p style={{ padding: '0 20px', color: 'var(--text-muted)', fontSize: '14px' }}>Loading vendors...</p>
         ) : filteredVendors.length === 0 ? (
-          <p style={{ padding: '0 20px', color: '#aaa', fontSize: '14px' }}>No vendors match your search.</p>
+          <p style={{ padding: '0 20px', color: 'var(--text-muted)', fontSize: '14px' }}>No vendors match your search.</p>
         ) : (
           <div className="restaurant-list">
             {filteredVendors.map(vendor => (

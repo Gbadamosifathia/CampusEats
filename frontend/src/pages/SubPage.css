@@ -1,6 +1,6 @@
 /* Shared sub-page styles */
 .subpage {
-  background: #fafafa;
+  background: var(--bg-primary);
   min-height: 100vh;
   padding-bottom: 40px;
 }
@@ -10,15 +10,15 @@
   align-items: center;
   gap: 12px;
   padding: 20px 20px 16px;
-  background: #fff;
-  border-bottom: 1px solid #f5f5f5;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .subpage-back {
-  background: #f5f5f5;
+  background: var(--bg-input);
   border: none;
   border-radius: 50%;
   width: 38px;
@@ -28,16 +28,16 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+  color: var(--text-primary);
 }
 
 .subpage-header h1 {
   font-size: 18px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
 }
 
-/* Avatar section (PersonalInfo) */
 .subpage-avatar-section {
   display: flex;
   flex-direction: column;
@@ -50,15 +50,15 @@
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 3px solid var(--bg-secondary);
+  box-shadow: var(--shadow-md);
   margin-bottom: 12px;
 }
 
 .subpage-name {
   font-size: 20px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -66,17 +66,16 @@
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  color: #8e8e93;
+  color: var(--text-muted);
   text-transform: uppercase;
   padding: 20px 20px 8px;
 }
 
-/* Card */
 .subpage-card {
-  background: #fff;
+  background: var(--bg-card);
   margin: 0 16px;
   border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 
@@ -84,7 +83,7 @@
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--border);
   gap: 14px;
 }
 
@@ -93,7 +92,7 @@
 }
 
 .subpage-field-icon {
-  color: #a03500;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -109,12 +108,12 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #8e8e93;
+  color: var(--text-muted);
 }
 
 .subpage-field-value {
   font-size: 15px;
-  color: #1c1c1e;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
@@ -123,6 +122,7 @@
   border: none;
   padding: 4px;
   cursor: pointer;
+  color: var(--text-muted);
 }
 
 .subpage-empty {
@@ -130,7 +130,7 @@
   flex-direction: column;
   align-items: center;
   padding: 32px 0;
-  color: #aaa;
+  color: var(--text-muted);
   gap: 10px;
   font-size: 14px;
 }
@@ -138,18 +138,17 @@
 .subpage-note {
   text-align: center;
   font-size: 13px;
-  color: #aaa;
+  color: var(--text-muted);
   margin-top: 20px;
   padding: 0 20px;
 }
 
-/* Add Address Form */
 .subpage-form {
   margin: 16px;
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -158,17 +157,17 @@
 .subpage-input {
   padding: 14px 16px;
   border-radius: 10px;
-  border: 1.5px solid #f0f0f0;
+  border: 1.5px solid var(--border);
   font-size: 15px;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif;
   outline: none;
-  background: #fafafa;
-  color: #1c1c1e;
+  background: var(--bg-input);
+  color: var(--text-primary);
   transition: border-color 0.2s;
 }
 
 .subpage-input:focus {
-  border-color: #a03500;
+  border-color: var(--accent);
 }
 
 .subpage-form-btns {
@@ -182,10 +181,11 @@
   padding: 12px;
   border-radius: 10px;
   border: none;
-  background: #f0f0f0;
-  color: #444;
+  background: var(--bg-input);
+  color: var(--text-secondary);
   font-size: 15px;
   font-weight: 600;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
 }
 
@@ -194,12 +194,13 @@
   padding: 12px;
   border-radius: 10px;
   border: none;
-  background: #a03500;
+  background: var(--accent-gradient);
   color: #fff;
   font-size: 15px;
   font-weight: 700;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(160,53,0,0.2);
+  box-shadow: 0 4px 10px var(--accent-shadow);
 }
 
 .subpage-add-btn {
@@ -210,15 +211,16 @@
   margin: 16px;
   padding: 16px;
   border-radius: 14px;
-  border: 2px dashed #e0e0e0;
+  border: 2px dashed var(--border);
   background: transparent;
-  color: #a03500;
+  color: var(--accent);
   font-size: 15px;
   font-weight: 600;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .subpage-add-btn:hover {
-  background: #fff0e8;
+  background: var(--bg-accent);
 }

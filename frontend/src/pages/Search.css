@@ -1,7 +1,7 @@
 .search-page-container {
   padding: 16px;
-  background-color: #f8f9fa;
-  min-height: calc(100vh - 140px); /* Adjust based on topbar and bottomnav */
+  background-color: var(--bg-primary);
+  min-height: calc(100vh - 140px);
 }
 
 .search-content {
@@ -15,7 +15,7 @@
 .search-section h3 {
   font-size: 16px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 
@@ -28,25 +28,17 @@
 .search-pill {
   padding: 8px 16px;
   border-radius: 20px;
-  border: 1px solid #e5e5ea;
-  background-color: #fff;
-  color: #3a3a3c;
+  border: 1px solid var(--border);
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
   font-size: 14px;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .search-pill:hover {
-  background-color: #f2f2f7;
-  border-color: #d1d1d6;
-}
-
-.category-pill {
-  background-color: #e8f0fe;
-  color: #1a73e8;
-  border: none;
-}
-
-.category-pill:hover {
-  background-color: #d2e3fc;
+  background-color: var(--bg-input);
+  border-color: var(--accent);
+  color: var(--accent);
 }
