@@ -17,4 +17,5 @@ urlpatterns =[
     path('payment_verify/<str:reference>/', views.verify_payment, name="verify_payment"),
     path('webhook/paystack/', views.paystack_webhook, name='paystack_webhook'),
     path('vendor/<int:pk>/orders/', views.vendor_orders, name='vendor_orders'),
+    path('me/', views.me, name='me'),
 ]

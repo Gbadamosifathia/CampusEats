@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from Eats.models import Vendor, MenuItem, Order, OrderItem, Payment
 from django.contrib.auth.models import User
+from django.db import transaction
 
 class VendorSerializers(serializers.ModelSerializer):
     class Meta:
@@ -13,9 +14,51 @@ class MenuItemSerializers(serializers.ModelSerializer):
         fields = '__all__'
 
 class OrderSerializers(serializers.ModelSerializer):
+    # This tells the serializer to expect a list of items from the frontend
+    items = serializers.ListField(child=serializers.DictField(), write_only=True)
+
     class Meta:
         model = Order
-        fields = '__all__'
+        # Include all your fields, plus the new 'items' field
+        fields = ['id', 'vendor', 'status', 'total_amount', 'created_at', 'items']
+        
+        # CRITICAL: We block the frontend from setting the user, total_amount, or status
+        read_only_fields = ['user', 'total_amount', 'status']
+
+    def create(self, validated_data):
+        # Pull the list of items out of the frontend's request
+        items_data = validated_data.pop('items')
+        
+        # transaction.atomic() ensures that if one item fails, the whole order is cancelled.
+        # It prevents half-complete orders from saving to the database.
+        with transaction.atomic():
+            # 1. Create the initial Order with a temporary total of 0
+            order = Order.objects.create(total_amount=0, status='Pending', **validated_data)
+            
+            calculated_total = 0
+            
+            # 2. Loop through the items the frontend sent
+            for item in items_data:
+                # Get the real menu item directly from your secure database
+                menu_item = MenuItem.objects.get(id=item['menu_item'])
+                quantity = item.get('quantity', 1)
+                # 3. Create the OrderItem record
+                OrderItem.objects.create(
+                    order=order,
+                    menu_item=menu_item,
+                    quantity=quantity,
+                    price_per_order=menu_item.price # Lock in the price at time of order
+                )
+                
+                # 4. Add the true cost to our running total
+                calculated_total += (menu_item.price * quantity)
+            
+            # 5. Update the parent Order with the final, secure total amount
+            order.total_amount = calculated_total
+            order.save()
+            
+            return order
+
 
 class OrderItemSerializers(serializers.ModelSerializer):
     class Meta:
