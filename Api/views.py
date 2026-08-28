@@ -209,6 +209,7 @@ def initialize_payment(request, order_id):
     response = requests.post("https://api.paystack.co/transaction/initialize", json = data, headers=headers)
     result = response.json()
     if not response.ok or not result.get('status'):
+        print("paystack error:", result)
         return Response({'error': 'Failed to initialize payment'}, status=502)
     Payment.objects.create(
         order=order,
@@ -226,6 +227,7 @@ def verify_payment(request, reference):
     }
     response = requests.get(f"https://api.paystack.co/transaction/verify/{reference}", headers=headers)
     result = response.json()
+    print("Verification result:", result)
     if result ['data'] ['status'] == 'success':
         payment = get_object_or_404(Payment, reference=reference, order__user= request.user)
         payment.status = 'Success'
