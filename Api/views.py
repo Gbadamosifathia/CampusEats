@@ -270,17 +270,7 @@ def paystack_webhook(request):
         payment.status = 'Success'
         payment.verified_at = timezone.now()
         payment.save()
-        
+        payment.order.status = 'Paid'
         payment.order.save()
         
     return HttpResponse(status=200)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def me(request):
-    return Response({
-        'first_name': request.user.first_name,
-        'last_name': request.user.last_name,
-        'username': request.user.username,
-        'email': request.user.email
-    })
