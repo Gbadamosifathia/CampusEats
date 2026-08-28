@@ -1,0 +1,52 @@
+.search-page-container {
+  padding: 16px;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 140px); /* Adjust based on topbar and bottomnav */
+}
+
+.search-content {
+  margin-top: 24px;
+}
+
+.search-section {
+  margin-bottom: 24px;
+}
+
+.search-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1c1c1e;
+  margin-bottom: 12px;
+}
+
+.pill-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.search-pill {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #e5e5ea;
+  background-color: #fff;
+  color: #3a3a3c;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-pill:hover {
+  background-color: #f2f2f7;
+  border-color: #d1d1d6;
+}
+
+.category-pill {
+  background-color: #e8f0fe;
+  color: #1a73e8;
+  border: none;
+}
+
+.category-pill:hover {
+  background-color: #d2e3fc;
+}

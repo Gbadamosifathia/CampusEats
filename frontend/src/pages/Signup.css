@@ -1,0 +1,245 @@
+.signup-container {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  background-color: #fafafa;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: #1a1a1a;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.auth-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin: 0 auto 1rem;
+  display: block;
+}
+
+.signup-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+}
+
+.signup-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #222;
+}
+
+.signup-header p {
+  color: #666;
+  font-size: 1rem;
+}
+
+.account-type-toggle {
+  display: flex;
+  background-color: #efefef;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  padding: 4px;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn.active-student {
+  background-color: #fff;
+  color: #1a1a1a;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.toggle-btn.active-vendor {
+  background-color: #ab3a00;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(171, 58, 0, 0.2);
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  text-align: center;
+  border: 1px solid #ffcdd2;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.input-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.input-row .input-group {
+  flex: 1;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 1.25rem 3rem 1.25rem 1.25rem;
+  background-color: #f5f5f5;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #333;
+  outline: none;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.input-group input:focus {
+  background-color: #eeeeee;
+  transform: scale(1.01);
+}
+
+.input-group input::placeholder {
+  color: #555;
+  font-weight: 600;
+}
+
+.input-icon {
+  position: absolute;
+  right: 1.25rem;
+  color: #555;
+}
+
+.vendor-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  border: none;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.submit-btn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.student-btn {
+  background-color: #1a1a1a;
+}
+
+.student-btn:not(:disabled):hover {
+  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.3);
+}
+
+.vendor-btn {
+  background-color: #ab3a00;
+}
+
+.vendor-btn:not(:disabled):hover {
+  box-shadow: 0 4px 12px rgba(171, 58, 0, 0.3);
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1rem;
+  color: #555;
+}
+
+.login-link a {
+  color: #ab3a00;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Animations */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.slide-up {
+  animation: slideUpFade 0.6s ease-out forwards;
+}
+
+.slide-up-delay-1 {
+  animation: slideUpFade 0.6s ease-out 0.1s forwards;
+  opacity: 0;
+}
+
+.slide-up-delay-2 {
+  animation: slideUpFade 0.6s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+.slide-up-delay-3 {
+  animation: slideUpFade 0.6s ease-out 0.3s forwards;
+  opacity: 0;
+}
+
+.slide-down {
+  animation: slideDownFade 0.4s ease-out forwards;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
