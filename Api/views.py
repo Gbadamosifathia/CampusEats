@@ -270,7 +270,6 @@ def paystack_webhook(request):
         payment.status = 'Success'
         payment.verified_at = timezone.now()
         payment.save()
-        
         payment.order.status = 'Paid'
         payment.order.save()
         
