@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from cloudinary.models import CloudinaryField
+
 class Vendor(models.Model):
     name = models.CharField(max_length= 40)
     description = models.TextField()
@@ -8,15 +8,14 @@ class Vendor(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     is_open = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
-    image = CloudinaryField('image', null=True, blank=True)
+    image_url = models.URLField(max_length=500, null=True, blank=True)
 
 class MenuItem(models.Model):
     name = models.CharField(max_length= 40)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     is_available = models.BooleanField(default=True)
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
-    image = CloudinaryField('image', null=True, blank=True)
-
+    image_url = models.URLField(max_length=500, null=True, blank=True)
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     vendor = models.ForeignKey(Vendor, on_delete= models.CASCADE)
