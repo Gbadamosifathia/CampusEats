@@ -42,6 +42,7 @@ function Profile() {
     image: null,
     imagePreview: null
   });
+  const [editingDishId, setEditingDishId] = useState(null);
   const [savingDish, setSavingDish] = useState(false);
 
   // Fetch vendor orders (used for initial load + polling)
@@ -91,17 +92,18 @@ function Profile() {
             setVendorProfile(myVendor);
             vendorIdRef.current = myVendor.id;
             
-            // Fetch Vendor's Menu Items
-            const menuRes = await fetch(`${API_URL}/api/menuitem_list/?vendor=${myVendor.id}`, {
+            // Fetch Vendor's Menu Items and Orders simultaneously (Parallel fetching)
+            const menuPromise = fetch(`${API_URL}/api/menuitem_list/?vendor=${myVendor.id}`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
+            const ordersPromise = fetchVendorOrders(myVendor.id);
+
+            const [menuRes] = await Promise.all([menuPromise, ordersPromise]);
+            
             if (menuRes.ok) {
               const menuData = await menuRes.json();
               setMenuItems(menuData);
             }
-
-            // Fetch initial orders
-            await fetchVendorOrders(myVendor.id);
           } else {
             setIsVendor(false);
           }
@@ -167,24 +169,62 @@ function Profile() {
     }
   };
 
+  const handleEditClick = (dish) => {
+    setEditingDishId(dish.id);
+    setDishForm({
+      name: dish.name,
+      price: dish.price,
+      description: dish.description,
+      is_available: dish.is_available,
+      image: null,
+      imagePreview: dish.image_url || null
+    });
+    setShowAddDish(true);
+  };
+
   const handleAddDish = async (e) => {
     e.preventDefault();
     if (!vendorProfile) return;
     setSavingDish(true);
     
     try {
+      let imageUrl = null;
+      if (dishForm.image) {
+        const cloudinaryData = new FormData();
+        cloudinaryData.append("file", dishForm.image);
+        cloudinaryData.append("upload_preset", "CampusEat");
+        
+        const cloudinaryRes = await fetch("https://api.cloudinary.com/v1_1/nvte2bmp/image/upload", {
+          method: "POST",
+          body: cloudinaryData
+        });
+        
+        if (cloudinaryRes.ok) {
+          const uploadedData = await cloudinaryRes.json();
+          imageUrl = uploadedData.secure_url;
+        } else {
+          console.error("Cloudinary upload failed");
+          alert("Image upload failed. Please try again.");
+          setSavingDish(false);
+          return;
+        }
+      }
+
       const formData = new FormData();
       formData.append('vendor', vendorProfile.id);
       formData.append('name', dishForm.name);
       formData.append('price', dishForm.price);
       formData.append('description', dishForm.description);
       formData.append('is_available', dishForm.is_available);
-      if (dishForm.image) {
-        formData.append('image', dishForm.image);
+      if (imageUrl) {
+        formData.append('image_url', imageUrl);
       }
 
-      const res = await fetch(`${API_URL}/api/menuitem_list/`, {
-        method: 'POST',
+      const url = editingDishId ? `${API_URL}/api/menuitem/${editingDishId}/` : `${API_URL}/api/menuitem_list/`;
+      const method = editingDishId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: method,
         headers: {
           'Authorization': `Bearer ${token}`
         },
@@ -192,12 +232,17 @@ function Profile() {
       });
 
       if (res.ok) {
-        const newDish = await res.json();
-        setMenuItems([...menuItems, newDish]);
+        const savedDish = await res.json();
+        if (editingDishId) {
+          setMenuItems(menuItems.map(d => d.id === editingDishId ? savedDish : d));
+        } else {
+          setMenuItems([...menuItems, savedDish]);
+        }
         setShowAddDish(false);
+        setEditingDishId(null);
         setDishForm({ name: '', price: '', description: '', is_available: true, image: null, imagePreview: null });
       } else {
-        alert("Failed to add dish.");
+        alert("Failed to save dish.");
       }
     } catch (error) {
       console.error("Error adding dish:", error);
@@ -386,7 +431,14 @@ function Profile() {
                       <div className="menu-grid">
                         {menuItems.map(dish => (
                           <div key={dish.id} className="menu-item-card">
-                            <div className="dish-img-placeholder">
+                            <div 
+                              className="dish-img-placeholder"
+                              style={dish.image_url ? { 
+                                backgroundImage: `url(${dish.image_url})`, 
+                                backgroundSize: 'cover', 
+                                backgroundPosition: 'center' 
+                              } : {}}
+                            >
                               <span className="dish-price">₦{dish.price}</span>
                             </div>
                             <div className="dish-info">
@@ -394,7 +446,7 @@ function Profile() {
                               <p className="dish-desc">{dish.description}</p>
                             </div>
                             <div className="dish-actions">
-                              <button className="icon-btn edit"><Edit2 size={16} /></button>
+                              <button className="icon-btn edit" onClick={() => handleEditClick(dish)}><Edit2 size={16} /></button>
                               <button className="icon-btn delete" onClick={() => deleteMenuItem(dish.id)}>
                                 <Trash2 size={16} />
                               </button>
@@ -407,8 +459,8 @@ function Profile() {
                 ) : (
                   <div className="vendor-add-menu fade-in">
                     <div className="pane-header">
-                      <h2>Add New Dish</h2>
-                      <button className="cancel-btn" onClick={() => setShowAddDish(false)}>Cancel</button>
+                      <h2>{editingDishId ? 'Edit Dish' : 'Add New Dish'}</h2>
+                      <button className="cancel-btn" onClick={() => { setShowAddDish(false); setEditingDishId(null); setDishForm({ name: '', price: '', description: '', is_available: true, image: null, imagePreview: null }); }}>Cancel</button>
                     </div>
                     
                     <form onSubmit={handleAddDish}>
