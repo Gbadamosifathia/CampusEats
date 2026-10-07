@@ -7,7 +7,7 @@ class Vendor(models.Model):
     phone_number = models.CharField(max_length= 11)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     is_open = models.BooleanField(default=False)
-    is_approved = models.BooleanField(default=True)
+    is_approved = models.BooleanField(default=False)
     image_url = models.URLField(max_length=500, null=True, blank=True)
 
 class MenuItem(models.Model):
