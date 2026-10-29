@@ -163,7 +163,6 @@ firebase_file_path = os.path.join(BASE_DIR, 'firebase_credentials.json')
 with open(firebase_file_path, 'r') as file:
     FIREBASE_CREDENTIALS = json.load(file)
 
-
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
