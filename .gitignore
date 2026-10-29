@@ -6,3 +6,4 @@ db.sqlite3
 *.log
 .vscode/
 .idea/
+firebase_credentials.json

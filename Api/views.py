@@ -1,6 +1,8 @@
 from rest_framework.response import Response
+from decouple import config
+from .notification import notify_vendor
 from rest_framework.decorators import api_view
-from Eats.models import Vendor, MenuItem, Order, OrderItem, Payment
+from Eats.models import Vendor, MenuItem, Order, OrderItem, Payment, VendorDevice
 from .serializers import VendorSerializers, MenuItemSerializers, OrderSerializers, OrderItemSerializers, SignupSerializers
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import permission_classes
@@ -110,7 +112,7 @@ def menuitem_detail(request, pk):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=200)
-        return Response(serializer.errors, status=400)
+        return Response(serializer.errors, status=400) 
     if request.method == "DELETE":
         menuitem = get_object_or_404(MenuItem, pk=pk, vendor__owner=request.user)
         menuitem.delete()
@@ -126,7 +128,8 @@ def order_list_create(request):
     if request.method == "POST": 
         serializers = OrderSerializers(data = request.data)
         if serializers.is_valid():
-            serializers.save(user=request.user)
+            order = serializers.save(user=request.user)
+            notify_vendor(order.vendor, order.id)
             return Response(serializers.data, status=201)
         return Response(serializers.errors, status=400)
 @api_view(["GET", "PUT", "DELETE"])
@@ -200,9 +203,11 @@ def initialize_payment(request, order_id):
         "Authorization" : f"Bearer {settings.PAYSTACK_SECRET_KEY}",
         "Content-Type" : "application/json"
     }
+    callback_url = config('FRONTEND_PAYMENT_CALLBACK_URL', default='http://localhost:3000/payment-success')
     data = {
         "email" : request.user.email,
         "amount" : int(Decimal(str(order.total_amount ))* 100),
+        "callback_url": callback_url,
         "reference": f"order_{order_id}_{order.created_at.timestamp()}",
     }
 
@@ -230,11 +235,13 @@ def verify_payment(request, reference):
     print("Verification result:", result)
     if result ['data'] ['status'] == 'success':
         payment = get_object_or_404(Payment, reference=reference, order__user= request.user)
-        payment.status = 'Success'
-        payment.verified_at = timezone.now()
-        payment.save()
-        payment.order.status = 'Paid'
-        payment.order.save()
+        order = payment.order
+        if order.status != 'Paid':
+            payment.status = 'Success'
+            payment.verified_at = timezone.now()
+            payment.save()
+        order.status = 'Paid'
+        order.save()
         return Response({'message': 'payment verified successfully'})
     return Response({'message':'payment verification failed'}, status=400)
 
@@ -269,12 +276,13 @@ def paystack_webhook(request):
             # Return 200 so Paystack stops retrying a transaction that isn't in your DB
             return HttpResponse(status=200)
             
-        payment.status = 'Success'
-        payment.verified_at = timezone.now()
-        payment.save()
-        payment.order.status = 'Paid'
-        payment.order.save()
-        
+        order = payment.order
+        if order.status != 'Paid':
+            payment.status = 'Success'
+            payment.verified_at = timezone.now()
+            payment.save()
+            order.status = 'Paid'
+            order.save()
     return HttpResponse(status=200)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -285,3 +293,16 @@ def me(request):
         'username': request.user.username,
         'email': request.user.email,
     })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated]) 
+def save_token(request):
+    token = request.data.get('token')
+    if not token:
+        return Response({'error': 'Token is required'}, status=400)
+    
+    vendor = Vendor.objects.filter(owner=request.user).first()
+    if not vendor:
+        return Response({'error': 'not a vendor account'}, status=400)
+    VendorDevice.objects.update_or_create(token=token, defaults={'vendor': vendor})
+    return Response({'Message': 'Token saved successfully'}, status=201)

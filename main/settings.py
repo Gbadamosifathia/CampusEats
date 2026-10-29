@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 from pathlib import Path
 from decouple import Csv, config
 from datetime import timedelta
+import json
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -154,6 +156,13 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS' : True,
     'BLACKLIST_AFTER_ROTATION' : True,
 }
+
+firebase_file_path = os.path.join(BASE_DIR, 'firebase_credentials.json')
+
+# Open and load the file securely
+with open(firebase_file_path, 'r') as file:
+    FIREBASE_CREDENTIALS = json.load(file)
+
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'

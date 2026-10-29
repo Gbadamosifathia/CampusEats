@@ -9,7 +9,6 @@ class Vendor(models.Model):
     is_open = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
     image_url = models.URLField(max_length=500, null=True, blank=True)
-
 class MenuItem(models.Model):
     name = models.CharField(max_length= 40)
     price = models.DecimalField(max_digits=8, decimal_places=2)
@@ -46,3 +45,9 @@ class Payment(models.Model):
     ])
     amount = models.DecimalField(max_digits=9, decimal_places=2)
     verified_at = models.DateTimeField(null=True, blank=True)
+
+class VendorDevice(models.Model):
+    token = models.TextField(unique=True)
+    vendor= models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='devices')
+    timestamp = models.DateTimeField(auto_now_add=True)
+ 
