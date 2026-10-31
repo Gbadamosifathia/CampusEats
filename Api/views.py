@@ -203,7 +203,7 @@ def initialize_payment(request, order_id):
         "Authorization" : f"Bearer {settings.PAYSTACK_SECRET_KEY}",
         "Content-Type" : "application/json"
     }
-    callback_url = config('FRONTEND_PAYMENT_CALLBACK_URL', default='http://localhost:3000/payment-success')
+    callback_url = config('FRONTEND_PAYMENT_CALLBACK_URL', default="https://campus-eats-beta.vercel.app")
     data = {
         "email" : request.user.email,
         "amount" : int(Decimal(str(order.total_amount ))* 100),
