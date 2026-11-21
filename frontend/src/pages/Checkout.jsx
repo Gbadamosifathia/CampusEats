@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowLeft, ShoppingBag, Loader } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, ShoppingBag, Loader, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,27 @@ function Checkout() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const lastOrderId = localStorage.getItem('last_order_id');
+
+  // Intercept Paystack redirect if Paystack sends user to /checkout
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const reference = searchParams.get('reference') || searchParams.get('trxref');
+    
+    if (reference) {
+      // Forward immediately to /payment-success to verify and track the order
+      navigate(`/payment-success?reference=${reference}`, { replace: true });
+      return;
+    }
+
+    // If returned from Paystack without URL query params but order was initiated
+    const awaitingPayment = sessionStorage.getItem('ce_awaiting_payment');
+    if (awaitingPayment && lastOrderId && cartItems.length === 0) {
+      sessionStorage.removeItem('ce_awaiting_payment');
+      navigate(`/payment-success`, { replace: true });
+    }
+  }, [navigate, cartItems.length, lastOrderId]);
+
   const handlePayNow = async () => {
     if (cartItems.length === 0 || !restaurantId) return;
     setLoading(true);
@@ -27,7 +48,7 @@ function Checkout() {
     }
 
     try {
-      // Step 1: Create the order (Backend now handles items and totals automatically)
+      // Step 1: Create the order (Backend handles items and totals)
       const orderRes = await fetch(`${API_URL}/api/order_list/`, {
         method: 'POST',
         headers: {
@@ -53,13 +74,17 @@ function Checkout() {
       }
       const order = await orderRes.json();
 
-      // Step 3: Initialize Paystack payment
+      // Step 2: Initialize Paystack payment with callback_url
+      const callbackUrl = `${window.location.origin}/payment-success`;
       const payRes = await fetch(`${API_URL}/api/payment/initialize/${order.id}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
+        body: JSON.stringify({
+          callback_url: callbackUrl,
+        })
       });
 
       if (!payRes.ok) {
@@ -73,10 +98,12 @@ function Checkout() {
         throw new Error('No payment URL returned from Paystack.');
       }
 
-      // Step 4: Clear cart and redirect to Paystack
+      // Step 3: Record tracking IDs before redirecting
       clearCart();
-      // Save order ID so tracking page can find it after redirect
-      localStorage.setItem('last_order_id', order.id);
+      localStorage.setItem('last_order_id', String(order.id));
+      sessionStorage.setItem('ce_awaiting_payment', 'true');
+      
+      // Step 4: Redirect to Paystack
       window.location.href = authorizationUrl;
 
     } catch (err) {
@@ -112,6 +139,15 @@ function Checkout() {
               <div className="empty-cart">
                 <ShoppingBag size={48} color="#ddd" />
                 <p>Your cart is empty.</p>
+                {lastOrderId && (
+                  <button 
+                    className="track-existing-order-btn" 
+                    onClick={() => navigate(`/order-tracking/${lastOrderId}`)}
+                  >
+                    <Package size={16} style={{ marginRight: '6px' }} />
+                    Track Active Order #{lastOrderId} ➔
+                  </button>
+                )}
               </div>
             )}
           </div>

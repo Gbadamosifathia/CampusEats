@@ -1,12 +1,17 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
-const ThemeContext = createContext();
+const defaultThemeValue = {
+  theme: (typeof window !== 'undefined' && localStorage.getItem('campuseats_theme')) || 'light',
+  toggleTheme: () => {}
+};
 
-export const useTheme = () => useContext(ThemeContext);
+const ThemeContext = createContext(defaultThemeValue);
+
+export const useTheme = () => useContext(ThemeContext) || defaultThemeValue;
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('campuseats_theme') || 'light';
+    return (typeof window !== 'undefined' && localStorage.getItem('campuseats_theme')) || 'light';
   });
 
   useEffect(() => {

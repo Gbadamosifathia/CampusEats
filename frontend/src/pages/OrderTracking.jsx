@@ -1,133 +1,215 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, CheckCircle, Clock, Package, ChefHat } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Clock, Package, ChefHat, XCircle, Home } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
+import { showBrowserNotification, playNotificationChime } from '../utils/notifications';
 import './OrderTracking.css';
 
 const STEPS = [
   {
-    key: 'Pending',
+    key: 'placed',
     label: 'Order Placed',
     icon: CheckCircle,
-    description: 'Your order has been received!',
+    description: 'Your order has been received and confirmed!',
   },
   {
-    key: 'Preparing',
+    key: 'preparing',
     label: 'Kitchen is Preparing',
     icon: ChefHat,
-    description: 'Your chef is on it.',
+    description: 'Your chef is cooking your meal.',
   },
   {
-    key: 'Completed',
+    key: 'completed',
     label: 'Ready for Pickup',
     icon: Package,
     description: 'Head over to collect your meal!',
   },
 ];
 
-// Maps each backend status to its visual step index (0-based)
-const STATUS_TO_STEP = {
-  'Pending':   0,
-  'Paid':      0, // Paid = order placed & confirmed, same visual step
-  'Preparing': 1,
-  'Completed': 2,
-  'Cancelled': 2, // show on last step, card will reflect cancellation
-};
-
 function getStepIndex(status) {
-  return STATUS_TO_STEP[status] ?? 0;
+  const s = (status || '').toLowerCase();
+  if (s === 'preparing') return 1;
+  if (s === 'completed' || s === 'cancelled') return 2;
+  return 0; // pending, paid
 }
 
 function OrderTracking() {
   const navigate = useNavigate();
   const { orderId: paramOrderId } = useParams();
-  const { token } = useAuth();
+  const { token, isVendor } = useAuth();
 
-  // Support both route param and localStorage fallback (for post-Paystack redirect)
-  const orderId = paramOrderId || localStorage.getItem('last_order_id');
+  // Support route param, localStorage fallback, or query param
+  const resolvedOrderId = paramOrderId || localStorage.getItem('last_order_id');
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const intervalRef = useRef(null);
+  const prevStatusRef = useRef(null);
+  const isPollingRef = useRef(true);
 
   const fetchOrder = async () => {
-    if (!orderId || !token) return;
+    if (!resolvedOrderId) {
+      setError('No active order found. Please place an order first.');
+      setLoading(false);
+      return true; // Stop polling
+    }
+    if (!token) {
+      setError('Please log in to track your order.');
+      setLoading(false);
+      return true; // Stop polling
+    }
+
     try {
-      const res = await fetch(`${API_URL}/api/order/${orderId}/`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+      const res = await fetch(`${API_URL}/api/order/${resolvedOrderId}/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
       });
+
       if (res.ok) {
         const data = await res.json();
-        setOrder(data);
-        // Stop polling once order is completed or cancelled
-        if (data.status === 'Completed' || data.status === 'Cancelled') {
-          clearInterval(intervalRef.current);
+        const currentStatus = (data.status || '').toLowerCase();
+        
+        // Notify student when order status changes after initial load
+        if (prevStatusRef.current && prevStatusRef.current !== currentStatus) {
+          playNotificationChime();
+          if (currentStatus === 'completed') {
+            showBrowserNotification('Order Ready for Pickup! 🎉', {
+              body: `Your order #${data.id} is ready for pickup at the counter!`,
+              tag: `student-order-${data.id}`,
+            });
+          } else if (currentStatus === 'preparing') {
+            showBrowserNotification('Kitchen is Preparing Your Meal! 🍳', {
+              body: `The chef is now preparing order #${data.id}.`,
+              tag: `student-order-${data.id}`,
+            });
+          }
         }
+        prevStatusRef.current = currentStatus;
+
+        setOrder(data);
+        setError('');
+        setLoading(false);
+
+        // Return true if finished to stop future polls
+        if (currentStatus === 'completed' || currentStatus === 'cancelled') {
+          return true;
+        }
+        return false;
       } else {
-        setError('Could not load order details.');
+        if (res.status === 404 || res.status === 401) {
+          localStorage.removeItem('last_order_id');
+          if (isVendor) {
+            setError('This is the customer tracking screen. To manage your restaurant orders, open your Vendor Dashboard.');
+          } else {
+            setError('Could not find active order details.');
+          }
+          setLoading(false);
+          return true; // Stop polling immediately
+        }
+        setError('Could not load order details. Please check your order history.');
+        setLoading(false);
+        return false;
       }
     } catch {
-      setError('Network error. Please check your connection.');
-    } finally {
+      setError('Network error. Trying to reconnect...');
       setLoading(false);
+      return false;
     }
   };
 
   useEffect(() => {
-    fetchOrder();
-    // Poll every 12 seconds for live updates
-    intervalRef.current = setInterval(fetchOrder, 12000);
-    return () => clearInterval(intervalRef.current);
-  }, [orderId, token]);
+    isPollingRef.current = true;
+    let timer = null;
 
-  const activeStepIndex = order ? getStepIndex(order.status) : 0;
+    const poll = async () => {
+      if (!isPollingRef.current) return;
+      const isDone = await fetchOrder();
+      if (!isDone && isPollingRef.current) {
+        timer = setTimeout(poll, 12000);
+      }
+    };
 
-  // Estimate pickup time (10-20 min from now)
-  const pickupTime = new Date(Date.now() + 15 * 60 * 1000);
-  const pickupStr = pickupTime.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+    poll();
+
+    return () => {
+      isPollingRef.current = false;
+      if (timer) clearTimeout(timer);
+    };
+  }, [resolvedOrderId, token]);
 
   if (loading) {
     return (
       <div className="ot-page ot-loading">
         <div className="ot-spinner" />
-        <p>Loading your order...</p>
+        <p>Loading your order details...</p>
       </div>
     );
   }
 
-  if (error || !order) {
+  if (error && !order) {
     return (
       <div className="ot-page ot-error">
-        <p>{error || 'Order not found.'}</p>
-        <button onClick={() => navigate('/')}>Go Home</button>
+        <p>{error}</p>
+        <button onClick={() => navigate(isVendor ? '/profile' : '/')}>
+          <Home size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+          {isVendor ? 'Go to Vendor Dashboard' : 'Back to Home'}
+        </button>
       </div>
     );
   }
 
-  const isCompleted = order.status === 'Completed';
+  const rawStatus = (order?.status || 'Pending');
+  const normalizedStatus = rawStatus.toLowerCase();
+  const activeStepIndex = getStepIndex(normalizedStatus);
+
+  const isCompleted = normalizedStatus === 'completed';
+  const isCancelled = normalizedStatus === 'cancelled';
+  const isPreparing = normalizedStatus === 'preparing';
+  const isPaid = normalizedStatus === 'paid';
+
+  // Estimate pickup time (15 mins from order creation or now)
+  const orderDate = order?.created_at ? new Date(order.created_at) : new Date();
+  const pickupTime = new Date(orderDate.getTime() + 15 * 60 * 1000);
+  const pickupStr = pickupTime.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+
+  const getStatusBadge = () => {
+    if (isCancelled) return '❌ Order Cancelled';
+    if (isCompleted) return '✅ Ready for Pickup!';
+    if (isPreparing) return '🍳 Kitchen is Cooking!';
+    if (isPaid) return '💳 Payment Confirmed — Kitchen Notified';
+    return '⏳ Order Placed — Pending Confirmation';
+  };
+
+  const getTimeText = () => {
+    if (isCancelled) return 'Cancelled';
+    if (isCompleted) return 'Ready Now! 🎉';
+    return pickupStr;
+  };
+
+  const totalAmount = parseFloat(order?.total_amount) || 0;
 
   return (
     <div className="ot-page">
       <header className="ot-header">
-        <button className="ot-back-btn" onClick={() => navigate('/')}>
-          <ArrowLeft size={22} color="#1c1c1e" />
+        <button className="ot-back-btn" onClick={() => navigate('/')} aria-label="Back to home">
+          <ArrowLeft size={22} />
         </button>
         <h1>Order Tracking</h1>
       </header>
 
       <div className="ot-estimated">
         <p className="ot-estimated-label">ESTIMATED PICKUP</p>
-        <p className="ot-time">{isCompleted ? 'Ready Now! 🎉' : pickupStr}</p>
-        <div className="ot-status-pill">
-          {isCompleted ? '✅ Ready for pickup!' : '🍳 Kitchen is cooking!'}
+        <p className="ot-time">{getTimeText()}</p>
+        <div className={`ot-status-pill ${isCancelled ? 'cancelled' : ''}`}>
+          {getStatusBadge()}
         </div>
       </div>
 
       <div className="ot-bag-wrapper">
-        <div className={`ot-bag-glow ${isCompleted ? 'ready' : ''}`}>
-          <span className="ot-bag-emoji">🛍️</span>
+        <div className={`ot-bag-glow ${isCompleted ? 'ready' : isCancelled ? 'cancelled' : ''}`}>
+          <span className="ot-bag-emoji">{isCancelled ? '❌' : '🛍️'}</span>
         </div>
       </div>
 
@@ -135,7 +217,7 @@ function OrderTracking() {
         {STEPS.map((step, index) => {
           const isPast = index < activeStepIndex;
           const isActive = index === activeStepIndex;
-          const Icon = step.icon;
+          const Icon = isCancelled && isActive ? XCircle : step.icon;
 
           return (
             <div key={step.key} className={`ot-step ${isPast ? 'past' : ''} ${isActive ? 'active' : ''}`}>
@@ -148,8 +230,14 @@ function OrderTracking() {
                 )}
               </div>
               <div className="ot-step-content">
-                <p className={`ot-step-label ${isActive ? 'active' : ''}`}>{step.label}</p>
-                {isActive && <p className="ot-step-desc">{step.description}</p>}
+                <p className={`ot-step-label ${isActive ? 'active' : ''}`}>
+                  {isCancelled && isActive ? 'Order Cancelled' : step.label}
+                </p>
+                {isActive && (
+                  <p className="ot-step-desc">
+                    {isCancelled ? 'This order was cancelled by the vendor.' : step.description}
+                  </p>
+                )}
               </div>
             </div>
           );
@@ -158,19 +246,25 @@ function OrderTracking() {
 
       <div className="ot-receipt">
         <div className="ot-receipt-header">
-          <span className="ot-order-id">ORDER #{order.id}</span>
+          <span className="ot-order-id">ORDER #{order?.id || resolvedOrderId}</span>
           <span className="ot-receipt-tag">Receipt</span>
         </div>
         <div className="ot-receipt-total">
-          <span>Total</span>
-          <span className="ot-amount">₦{parseFloat(order.total_amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
+          <span>Total Paid</span>
+          <span className="ot-amount">₦{totalAmount.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
       </div>
 
-      <div className="ot-refresh-hint">
-        <Clock size={13} />
-        <span>Auto-updating every 12 seconds</span>
-      </div>
+      {isCompleted ? (
+        <button className="ot-action-btn" onClick={() => navigate('/')}>
+          Enjoy your meal! Back to Home
+        </button>
+      ) : (
+        <div className="ot-refresh-hint">
+          <Clock size={13} />
+          <span>Auto-updating live every 12 seconds</span>
+        </div>
+      )}
     </div>
   );
 }

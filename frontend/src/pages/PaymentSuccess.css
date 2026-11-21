@@ -1,0 +1,144 @@
+.ps-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary, #fbfbfd);
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.ps-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--card-bg, #ffffff);
+  border-radius: 24px;
+  padding: 36px 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color, #f0f0f2);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.ps-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ps-spinner-wrapper {
+  margin-bottom: 20px;
+}
+
+.ps-spinner {
+  animation: ps-spin 1.2s linear infinite;
+}
+
+@keyframes ps-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.ps-icon-wrapper {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.success-icon {
+  background: #e8f5e9;
+}
+
+.failed-icon {
+  background: #ffebee;
+}
+
+.ps-card h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary, #1c1c1e);
+  margin: 0 0 10px 0;
+}
+
+.ps-message {
+  font-size: 15px;
+  color: var(--text-secondary, #666668);
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+  max-width: 340px;
+}
+
+.ps-reference {
+  font-family: monospace;
+  font-size: 12px;
+  background: var(--bg-secondary, #f4f4f6);
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: var(--text-secondary, #777);
+  margin: 0 0 20px 0;
+  word-break: break-all;
+}
+
+.ps-order-badge {
+  background: #fff3e0;
+  color: #e65100;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  display: inline-block;
+}
+
+.ps-redirect-hint {
+  font-size: 14px;
+  color: var(--text-secondary, #888);
+  margin-bottom: 24px;
+}
+
+.ps-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.ps-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.ps-primary-btn {
+  background: #f05a28;
+  color: #ffffff;
+}
+
+.ps-primary-btn:hover {
+  background: #d94918;
+  transform: translateY(-1px);
+}
+
+.ps-secondary-btn {
+  background: var(--bg-secondary, #f0f0f2);
+  color: var(--text-primary, #333333);
+}
+
+.ps-secondary-btn:hover {
+  background: #e4e4e6;
+}
+

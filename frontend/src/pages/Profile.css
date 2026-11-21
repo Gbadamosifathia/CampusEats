@@ -212,6 +212,15 @@
   background: var(--accent-gradient);
   color: #fff;
   box-shadow: 0 2px 8px var(--accent-shadow);
+  transition: all 0.2s ease;
+}
+
+.add-dish-btn:hover,
+.vendor-add-dish-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--accent-shadow);
+  opacity: 0.95;
+
 }
 
 .dashboard-content {
@@ -272,6 +281,7 @@
   font-weight: bold;
 }
 
+.add-dish-btn,
 .vendor-add-dish-btn {
   display: flex;
   align-items: center;
@@ -288,6 +298,15 @@
   white-space: nowrap;
   flex-shrink: 0;
   box-shadow: 0 2px 8px var(--accent-shadow);
+  transition: all 0.2s ease;
+}
+
+.add-dish-btn:hover,
+.vendor-add-dish-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--accent-shadow);
+  opacity: 0.95;
+
 }
 
 .cancel-btn {
@@ -398,16 +417,19 @@
 }
 
 .prepare-btn { background: #00bcd4; }
-.complete-btn { background: #4caf50; }
+.complete-btn,
+.ready-btn { background: #4caf50; }
 
 /* Menu Grid */
-.menu-grid {
+.menu-grid,
+.menu-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
-.menu-item-card {
+.menu-item-card,
+.dish-card {
   background: var(--bg-card);
   border-radius: 12px;
   overflow: hidden;
@@ -472,8 +494,10 @@
   justify-content: center;
 }
 
-.icon-btn.edit { color: #2f80ed; border-right: 1px solid var(--border); }
-.icon-btn.delete { color: #eb5757; }
+.icon-btn.edit,
+.icon-btn.edit-btn { color: #2f80ed; border-right: 1px solid var(--border); }
+.icon-btn.delete,
+.icon-btn.delete-btn { color: #eb5757; }
 
 /* Add Menu Form */
 .vendor-add-menu {
@@ -648,4 +672,171 @@
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+
+/* Vendor Notification Alert Banner */
+.vendor-notification-banner {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notification-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.notification-banner-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff3e0;
+  color: #f05a28;
+  flex-shrink: 0;
+}
+
+.notification-banner-icon.active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.notification-banner-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+}
+
+.notification-banner-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.notification-enable-btn {
+  background: #f05a28;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.notification-enable-btn:hover {
+  opacity: 0.9;
+}
+
+.notification-badge-active {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2e7d32;
+  background: #e8f5e9;
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+
+/* Dish Status Badges */
+.dish-status {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-top: 8px;
+  width: fit-content;
+}
+
+.dish-status.available {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.dish-status.unavailable {
+  background: rgba(244, 67, 54, 0.15);
+  color: #f44336;
+}
+
+/* Modal Overlay and Dish Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.dish-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  height: 100%;
 }

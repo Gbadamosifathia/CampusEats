@@ -4,6 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config';
 import { useNavigate } from 'react-router-dom';
+import {
+  registerDeviceTokenWithBackend,
+  requestAndRegisterNotifications,
+  showBrowserNotification,
+  playNotificationChime,
+} from '../utils/notifications';
 import './Profile.css';
 
 // Helper to decode JWT token
@@ -33,6 +39,14 @@ function Profile() {
   const [isVendor, setIsVendor] = useState(false);
   const [showAddDish, setShowAddDish] = useState(false);
 
+  // Notification States
+  const [notificationsEnabled, setNotificationsEnabled] = useState(
+    typeof Notification !== 'undefined' && Notification.permission === 'granted'
+  );
+  const [notificationLoading, setNotificationLoading] = useState(false);
+  const previousOrderIdsRef = useRef(new Set());
+  const initialOrdersLoadedRef = useRef(false);
+
   // New Dish Form State
   const [dishForm, setDishForm] = useState({
     name: '',
@@ -54,6 +68,23 @@ function Profile() {
       });
       if (ordersRes.ok) {
         const ordersData = await ordersRes.json();
+
+        // Detect newly arrived orders after initial load to trigger live alert
+        if (initialOrdersLoadedRef.current) {
+          const newOrders = ordersData.filter(o => !previousOrderIdsRef.current.has(o.id));
+          if (newOrders.length > 0) {
+            playNotificationChime();
+            const latest = newOrders[0];
+            showBrowserNotification(`New Order #${latest.id}! 🛍️`, {
+              body: `Total: ₦${parseFloat(latest.total_amount).toLocaleString()} - Status: ${latest.status}`,
+              tag: `order-${latest.id}`
+            });
+          }
+        } else {
+          initialOrdersLoadedRef.current = true;
+        }
+
+        previousOrderIdsRef.current = new Set(ordersData.map(o => o.id));
         setOrders(ordersData);
         setLastUpdated(new Date());
       }
@@ -64,7 +95,10 @@ function Profile() {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (!token) return;
+      if (!token) {
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
 
@@ -84,7 +118,7 @@ function Profile() {
 
         if (vendorsRes.ok) {
           const vendors = await vendorsRes.json();
-          // Find the vendor owned by the current user ID (converting both to string to avoid type mismatch)
+          // Find the vendor owned by the current user ID
           const myVendor = vendors.find(v => String(v.owner) === String(currentUserId));
           
           if (myVendor) {
@@ -118,6 +152,13 @@ function Profile() {
     fetchProfileData();
   }, [token]);
 
+  // If vendor has notification permission granted, sync device token with /api/savetoken/
+  useEffect(() => {
+    if (isVendor && token && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      registerDeviceTokenWithBackend(token);
+    }
+  }, [isVendor, token]);
+
   // Poll for new vendor orders every 15 seconds
   useEffect(() => {
     if (!isVendor) return;
@@ -130,6 +171,46 @@ function Profile() {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleEnableNotifications = async () => {
+    setNotificationLoading(true);
+    try {
+      const res = await requestAndRegisterNotifications(token);
+      if (res.success || res.permission === 'granted') {
+        setNotificationsEnabled(true);
+        playNotificationChime();
+        showBrowserNotification('Order Alerts Active! 🔔', {
+          body: 'You will receive immediate alerts whenever a customer places an order.'
+        });
+      } else {
+        alert(res.error || 'Could not enable notifications. Please allow notifications in your browser settings.');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setNotificationLoading(false);
+    }
+  };
+
+  const handleStudentNotificationClick = async () => {
+    if (!('Notification' in window)) {
+      alert('Notifications are not supported in this browser.');
+      return;
+    }
+    if (Notification.permission === 'granted') {
+      alert('✅ Notifications are already active! You will receive alerts when your order status changes.');
+      return;
+    }
+    const res = await requestAndRegisterNotifications(token);
+    if (res.permission === 'granted' || res.success) {
+      playNotificationChime();
+      showBrowserNotification('CampusEats Alerts Enabled! 🎉', {
+        body: 'We will notify you when your meals are preparing and ready for pickup.'
+      });
+    } else if (res.error) {
+      alert(res.error);
+    }
   };
 
   const handleToggleOpen = async () => {
@@ -253,7 +334,7 @@ function Profile() {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      // Fixed URL to match backend route: /api/order/<id>/status/
+      // Backend route: /api/order/<id>/status/
       const res = await fetch(`${API_URL}/api/order/${orderId}/status/`, {
         method: 'PUT',
         headers: {
@@ -290,7 +371,7 @@ function Profile() {
     { icon: <User size={20} />, title: 'Personal Information', route: '/profile/personal-info' },
     { icon: <MapPin size={20} />, title: 'Saved Addresses', route: '/profile/saved-addresses' },
     { icon: <CreditCard size={20} />, title: 'Payment Methods', route: null },
-    { icon: <Bell size={20} />, title: 'Notifications', route: null },
+    { icon: <Bell size={20} />, title: 'Notifications', onClick: handleStudentNotificationClick },
     { icon: <HelpCircle size={20} />, title: 'Help & Support', route: null },
   ];
 
@@ -362,6 +443,36 @@ function Profile() {
             {/* Orders Tab */}
             {activeTab === 'orders' && (
               <div className="tab-pane orders-pane fade-in">
+                {/* Push Notification Alert Banner */}
+                <div className="vendor-notification-banner">
+                  <div className="notification-banner-left">
+                    <div className={`notification-banner-icon ${notificationsEnabled ? 'active' : ''}`}>
+                      <Bell size={18} />
+                    </div>
+                    <div>
+                      <p className="notification-banner-title">
+                        {notificationsEnabled ? 'Live Order Alerts Active' : 'Order Push Notifications'}
+                      </p>
+                      <p className="notification-banner-sub">
+                        {notificationsEnabled 
+                          ? 'Receiving alerts for new incoming orders' 
+                          : 'Get notified immediately when a customer orders'}
+                      </p>
+                    </div>
+                  </div>
+                  {notificationsEnabled ? (
+                    <span className="notification-badge-active">Active</span>
+                  ) : (
+                    <button 
+                      className="notification-enable-btn"
+                      onClick={handleEnableNotifications}
+                      disabled={notificationLoading}
+                    >
+                      {notificationLoading ? 'Enabling...' : 'Enable Alerts'}
+                    </button>
+                  )}
+                </div>
+
                 <div className="pane-header">
                   <h2>Active Orders <span className="badge">{orders.length}</span></h2>
                   <div className="orders-refresh">
@@ -372,6 +483,7 @@ function Profile() {
                     )}
                   </div>
                 </div>
+
                 {orders.length === 0 ? (
                   <div className="empty-state">
                     <Package size={48} color="#ccc" />
@@ -388,18 +500,18 @@ function Profile() {
                           </span>
                         </div>
                         <div className="order-body">
-                          <p><strong>Total:</strong> ₦{order.total_amount}</p>
+                          <p><strong>Total:</strong> ₦{parseFloat(order.total_amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
                           <p className="order-date">{new Date(order.created_at).toLocaleString()}</p>
                         </div>
                         <div className="order-actions">
-                          {order.status === 'Pending' && (
+                          {(order.status === 'Pending' || order.status === 'Paid') && (
                             <button className="btn-action prepare-btn" onClick={() => updateOrderStatus(order.id, 'Preparing')}>
                               <Clock size={16} /> Mark Preparing
                             </button>
                           )}
                           {order.status === 'Preparing' && (
-                            <button className="btn-action complete-btn" onClick={() => updateOrderStatus(order.id, 'Completed')}>
-                              <CheckCircle size={16} /> Mark Completed
+                            <button className="btn-action ready-btn" onClick={() => updateOrderStatus(order.id, 'Completed')}>
+                              <CheckCircle size={16} /> Mark Ready
                             </button>
                           )}
                         </div>
@@ -413,73 +525,80 @@ function Profile() {
             {/* Menu Tab */}
             {activeTab === 'menu' && (
               <div className="tab-pane menu-pane fade-in">
-                {!showAddDish ? (
-                  <>
-                    <div className="pane-header">
-                      <h2>Your Menu</h2>
-                      <button className="vendor-add-dish-btn" onClick={() => setShowAddDish(true)}>
-                        <Plus size={18} /> Add Dish
-                      </button>
-                    </div>
-                    
-                    {menuItems.length === 0 ? (
-                      <div className="empty-state">
-                        <FileText size={48} color="#ccc" />
-                        <p>Your menu is empty.</p>
-                      </div>
-                    ) : (
-                      <div className="menu-grid">
-                        {menuItems.map(dish => (
-                          <div key={dish.id} className="menu-item-card">
-                            <div 
-                              className="dish-img-placeholder"
-                              style={dish.image_url ? { 
-                                backgroundImage: `url(${dish.image_url})`, 
-                                backgroundSize: 'cover', 
-                                backgroundPosition: 'center' 
-                              } : {}}
-                            >
-                              <span className="dish-price">₦{dish.price}</span>
-                            </div>
-                            <div className="dish-info">
-                              <h3>{dish.name}</h3>
-                              <p className="dish-desc">{dish.description}</p>
-                            </div>
-                            <div className="dish-actions">
-                              <button className="icon-btn edit" onClick={() => handleEditClick(dish)}><Edit2 size={16} /></button>
-                              <button className="icon-btn delete" onClick={() => deleteMenuItem(dish.id)}>
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
+                <div className="pane-header">
+                  <h2>Menu Items <span className="badge">{menuItems.length}</span></h2>
+                  <button className="add-dish-btn" onClick={() => { setEditingDishId(null); setDishForm({ name: '', price: '', description: '', is_available: true, image: null, imagePreview: null }); setShowAddDish(true); }}>
+                    <Plus size={16} /> Add Dish
+                  </button>
+                </div>
+
+                {menuItems.length === 0 ? (
+                  <div className="empty-state">
+                    <FileText size={48} color="var(--text-muted)" />
+                    <p style={{ marginTop: '12px', marginBottom: '16px', color: 'var(--text-muted)' }}>No menu items yet.</p>
+                    <button className="add-dish-btn" onClick={() => { setEditingDishId(null); setDishForm({ name: '', price: '', description: '', is_available: true, image: null, imagePreview: null }); setShowAddDish(true); }}>
+                      <Plus size={16} /> Add Your First Dish
+                    </button>
+                  </div>
                 ) : (
-                  <div className="vendor-add-menu fade-in">
-                    <div className="pane-header">
-                      <h2>{editingDishId ? 'Edit Dish' : 'Add New Dish'}</h2>
-                      <button className="cancel-btn" onClick={() => { setShowAddDish(false); setEditingDishId(null); setDishForm({ name: '', price: '', description: '', is_available: true, image: null, imagePreview: null }); }}>Cancel</button>
-                    </div>
-                    
-                    <form onSubmit={handleAddDish}>
+                  <div className="menu-list">
+                    {menuItems.map(dish => (
+                      <div key={dish.id} className="dish-card">
+                        <div className="dish-img-placeholder"
+                          style={dish.image_url ? { 
+                            backgroundImage: `url(${dish.image_url})`, 
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center' 
+                          } : {}}>
+                          {!dish.image_url && <Camera size={24} color="#888" />}
+                        </div>
+                        <div className="dish-info">
+                          <h3>{dish.name}</h3>
+                          <p className="dish-price">₦{parseFloat(dish.price).toLocaleString('en-NG', { minimumFractionDigits: 2 })}</p>
+                          <p className="dish-desc">{dish.description}</p>
+                          <span className={`dish-status ${dish.is_available ? 'available' : 'unavailable'}`}>
+                            {dish.is_available ? 'In Stock' : 'Out of Stock'}
+                          </span>
+                        </div>
+                        <div className="dish-actions">
+                          <button className="icon-btn edit-btn" onClick={() => handleEditClick(dish)}>
+                            <Edit2 size={16} />
+                          </button>
+                          <button className="icon-btn delete-btn" onClick={() => deleteMenuItem(dish.id)}>
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add/Edit Dish Modal */}
+                {showAddDish && (
+                  <div className="modal-overlay">
+                    <form className="dish-modal" onSubmit={handleAddDish}>
+                      <div className="modal-header">
+                        <h3>{editingDishId ? 'Edit Dish' : 'Add New Dish'}</h3>
+                        <button className="cancel-btn" onClick={() => { setShowAddDish(false); setEditingDishId(null); setDishForm({ name: '', price: '', description: '', is_available: true, image: null, imagePreview: null }); }}>Cancel</button>
+                      </div>
+
+                      {/* Image Upload Box */}
                       <div className="form-group">
                         <label>Dish Photo</label>
                         <div className="upload-box" onClick={() => document.getElementById('dish-image-input').click()}>
                           {dishForm.imagePreview ? (
                             <img src={dishForm.imagePreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }} />
                           ) : (
-                            <>
-                              <Camera size={32} color="#a03500" />
-                              <span className="upload-text">Upload Dish Photo</span>
-                            </>
+                            <div className="upload-placeholder">
+                              <Camera size={28} color="#888" />
+                              <span>Click to upload dish photo</span>
+                            </div>
                           )}
                           <input 
-                            id="dish-image-input" 
                             type="file" 
-                            accept="image/*" 
+                            id="dish-image-input" 
                             style={{ display: 'none' }} 
+                            accept="image/*" 
                             onChange={handleImageChange} 
                           />
                         </div>
@@ -490,8 +609,8 @@ function Profile() {
                         <input 
                           type="text" 
                           required 
-                          placeholder="e.g. Spicy Jollof Rice" 
-                          value={dishForm.name} 
+                          placeholder="e.g., Jollof Rice & Chicken" 
+                          value={dishForm.name}
                           onChange={(e) => setDishForm({...dishForm, name: e.target.value})}
                         />
                       </div>
@@ -546,9 +665,29 @@ function Profile() {
                     <label>Contact Phone</label>
                     <input type="text" value={vendorProfile?.phone_number || ''} readOnly />
                   </div>
+
+                  {/* Push Notifications setting */}
+                  <div className="settings-item" style={{marginTop: '8px'}}>
+                    <div className="settings-item-left">
+                      <span className="settings-icon"><Bell size={20} /></span>
+                      <span className="settings-item-title">Push Notifications</span>
+                    </div>
+                    {notificationsEnabled ? (
+                      <span className="notification-badge-active">Active</span>
+                    ) : (
+                      <button 
+                        className="notification-enable-btn" 
+                        onClick={handleEnableNotifications}
+                        disabled={notificationLoading}
+                        style={{ padding: '6px 12px', fontSize: '11px' }}
+                      >
+                        {notificationLoading ? '...' : 'Turn On'}
+                      </button>
+                    )}
+                  </div>
                   
                   {/* Dark mode toggle */}
-                  <div className="settings-item" style={{marginTop: '8px'}}>
+                  <div className="settings-item">
                     <div className="settings-item-left">
                       <span className="settings-icon">{theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}</span>
                       <span className="settings-item-title">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
@@ -589,14 +728,17 @@ function Profile() {
             {studentMenuItems.map((item, index) => (
               <button
                 key={index}
-                className={`settings-item ${item.route ? '' : 'settings-item-disabled'}`}
-                onClick={() => item.route && navigate(item.route)}
+                className={`settings-item ${item.route || item.onClick ? '' : 'settings-item-disabled'}`}
+                onClick={() => {
+                  if (item.onClick) item.onClick();
+                  else if (item.route) navigate(item.route);
+                }}
               >
                 <div className="settings-item-left">
                   <span className="settings-icon">{item.icon}</span>
                   <span className="settings-item-title">{item.title}</span>
                 </div>
-                <ChevronRight size={20} color={item.route ? '#c7c7cc' : '#e0e0e0'} />
+                <ChevronRight size={20} color={item.route || item.onClick ? '#c7c7cc' : '#e0e0e0'} />
               </button>
             ))}
             

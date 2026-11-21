@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Home from './pages/Home';
 import Checkout from './pages/Checkout';
 import RestaurantDetails from './pages/RestaurantDetails';
@@ -9,9 +11,11 @@ import Signup from './pages/Signup';
 import Login from './pages/Login';
 import SearchPage from './pages/Search';
 import OrderTracking from './pages/OrderTracking';
+import PaymentSuccess from './pages/PaymentSuccess';
 import PersonalInfo from './pages/PersonalInfo';
 import SavedAddresses from './pages/SavedAddresses';
 import BottomNav from './components/BottomNav';
+import VendorNotificationListener from './components/VendorNotificationListener';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('access_token');
@@ -24,29 +28,33 @@ const ProtectedRoute = ({ children }) => {
 const MainLayout = () => {
   const location = useLocation();
   const hideNavRoutes = ['/login', '/signup'];
-  // Also hide nav on sub-pages and tracking
+  // Hide nav on auth, sub-pages, payment success, and tracking
   const shouldShowNav = !hideNavRoutes.includes(location.pathname)
     && !location.pathname.startsWith('/order-tracking')
+    && !location.pathname.startsWith('/payment-success')
     && !location.pathname.startsWith('/profile/');
 
   return (
     <div className="app-wrapper" style={{ paddingBottom: shouldShowNav ? '80px' : '0' }}>
+      <VendorNotificationListener />
       <Routes>
-        {/* Protected Routes */}
-        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        {/* Public Browsing Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/restaurant/:id" element={<RestaurantDetails />} />
+        <Route path="/search" element={<SearchPage />} />
+
+        {/* Protected User Action Routes */}
         <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-        <Route path="/restaurant/:id" element={<ProtectedRoute><RestaurantDetails /></ProtectedRoute>} />
+        <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
         <Route path="/order-tracking/:orderId" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
-        {/* Order tracking without orderId — reads from localStorage after Paystack redirect */}
         <Route path="/order-tracking" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
 
         {/* Student Profile Sub-pages */}
         <Route path="/profile/personal-info" element={<ProtectedRoute><PersonalInfo /></ProtectedRoute>} />
         <Route path="/profile/saved-addresses" element={<ProtectedRoute><SavedAddresses /></ProtectedRoute>} />
 
-        {/* Public Routes */}
+        {/* Auth Pages */}
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
       </Routes>
@@ -55,17 +63,17 @@ const MainLayout = () => {
   );
 };
 
-import { AuthProvider } from './context/AuthContext';
-
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Router>
-          <MainLayout />
-        </Router>
-      </CartProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CartProvider>
+          <Router>
+            <MainLayout />
+          </Router>
+        </CartProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

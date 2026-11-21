@@ -2,14 +2,17 @@ import React from 'react';
 import { Plus } from 'lucide-react';
 import './MenuItem.css';
 
+const DEFAULT_DISH_IMG = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80';
+
 function MenuItem({ item, onAdd }) {
   const { title, description, price, image, isPopular, layout } = item;
+  const displayImage = image || item.image_url || DEFAULT_DISH_IMG;
 
   if (layout === 'grid') {
     return (
       <div className="menu-item-grid">
         <div className="grid-image-container">
-          <img src={image} alt={title} className="grid-image" />
+          <img src={displayImage} alt={title} className="grid-image" />
         </div>
         <h4 className="grid-title">{title}</h4>
         <div className="menu-item-action-row">
@@ -39,7 +42,7 @@ function MenuItem({ item, onAdd }) {
         </div>
       </div>
       <div className="menu-item-image-wrapper">
-        <img src={image} alt={title} className="menu-item-image" />
+        <img src={displayImage} alt={title} className="menu-item-image" />
       </div>
     </div>
   );

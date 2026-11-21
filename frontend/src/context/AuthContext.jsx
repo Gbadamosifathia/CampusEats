@@ -8,6 +8,8 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('access_token'));
+  const [isVendor, setIsVendor] = useState(localStorage.getItem('ce_is_vendor') === 'true');
+  const [vendorId, setVendorId] = useState(localStorage.getItem('ce_vendor_id'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,8 +22,35 @@ export const AuthProvider = ({ children }) => {
           if (res.ok) {
             const data = await res.json();
             setUser(data);
+
+            // Check if current user owns a vendor
+            try {
+              const decoded = JSON.parse(atob(token.split('.')[1]));
+              const currentUserId = decoded ? decoded.user_id : null;
+              if (currentUserId) {
+                const vRes = await fetch(`${API_URL}/api/vendor_list/`, {
+                  headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (vRes.ok) {
+                  const vendors = await vRes.json();
+                  const myVendor = vendors.find(v => String(v.owner) === String(currentUserId));
+                  if (myVendor) {
+                    setIsVendor(true);
+                    setVendorId(myVendor.id);
+                    localStorage.setItem('ce_is_vendor', 'true');
+                    localStorage.setItem('ce_vendor_id', String(myVendor.id));
+                  } else {
+                    setIsVendor(false);
+                    setVendorId(null);
+                    localStorage.removeItem('ce_is_vendor');
+                    localStorage.removeItem('ce_vendor_id');
+                  }
+                }
+              }
+            } catch (vErr) {
+              console.debug("Vendor verification check:", vErr);
+            }
           } else if (res.status === 401) {
-            // Token is definitively invalid or expired
             logout();
           } else {
             console.error("Failed to fetch user data, server returned:", res.status);
@@ -29,6 +58,9 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error("Failed to fetch user data", error);
         }
+      } else {
+        setIsVendor(false);
+        setVendorId(null);
       }
       setLoading(false);
     };
@@ -45,12 +77,17 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('ce_is_vendor');
+    localStorage.removeItem('ce_vendor_id');
+    localStorage.removeItem('last_order_id');
     setToken(null);
     setUser(null);
+    setIsVendor(false);
+    setVendorId(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isVendor, vendorId, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

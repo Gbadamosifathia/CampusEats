@@ -45,3 +45,23 @@
   color: var(--text-muted);
   font-weight: 400;
 }
+
+
+.search-clear-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  margin-left: 8px;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.search-clear-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-input);
+}

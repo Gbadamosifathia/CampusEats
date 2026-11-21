@@ -58,7 +58,7 @@ function RestaurantDetails() {
   const [restaurantData, setRestaurantData] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('Popular');
+  const [authRequired, setAuthRequired] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -80,17 +80,24 @@ function RestaurantDetails() {
 
       // Fetch real vendor data from API
       try {
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
         const [vendorRes, menuRes] = await Promise.all([
-          fetch(`${API_URL}/api/vendor/${numericId}/`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${API_URL}/api/menuitem_list/?vendor=${numericId}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_URL}/api/vendor/${numericId}/`, { headers }),
+          fetch(`${API_URL}/api/menuitem_list/?vendor=${numericId}`, { headers }),
         ]);
+
+        if (vendorRes.status === 401 || menuRes.status === 401) {
+          setAuthRequired(true);
+        }
 
         if (vendorRes.ok) {
           const vendor = await vendorRes.json();
           setRestaurantData({
             id: vendor.id,
             name: vendor.name,
-            image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            image: vendor.image_url || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
             rating: null,
             tags: vendor.description,
             deliveryTime: null,
@@ -104,9 +111,9 @@ function RestaurantDetails() {
           const mapped = items.map(item => ({
             id: item.id,
             title: item.name,
-            description: '',
+            description: item.description || '',
             price: parseFloat(item.price),
-            image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+            image: item.image_url || 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
             layout: 'horizontal',
           }));
           setMenuItems(mapped);
@@ -129,15 +136,56 @@ function RestaurantDetails() {
   if (loading) {
     return (
       <div className="restaurant-details-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-        <p style={{ color: '#aaa' }}>Loading...</p>
+        <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
+      </div>
+    );
+  }
+
+  if (authRequired) {
+    return (
+      <div className="restaurant-details-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', padding: '24px' }}>
+        <h3 style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>Log In to View Vendor</h3>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '20px', maxWidth: '340px', fontSize: '14px', lineHeight: '1.5' }}>
+          This vendor's menu and ordering are only visible to logged-in users.
+        </p>
+        <button 
+          onClick={() => navigate('/login')} 
+          style={{
+            padding: '10px 24px',
+            borderRadius: '24px',
+            background: 'var(--accent)',
+            color: '#fff',
+            border: 'none',
+            fontWeight: '600',
+            fontSize: '14px',
+            cursor: 'pointer',
+            boxShadow: '0 2px 10px var(--accent-shadow)'
+          }}
+        >
+          Log In / Sign Up
+        </button>
       </div>
     );
   }
 
   if (!restaurantData) {
     return (
-      <div className="restaurant-details-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-        <p style={{ color: '#aaa' }}>Restaurant not found.</p>
+      <div className="restaurant-details-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', textAlign: 'center', padding: '24px' }}>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '14px' }}>Restaurant not found.</p>
+        <button 
+          onClick={() => navigate(-1)} 
+          style={{
+            padding: '8px 18px',
+            borderRadius: '20px',
+            background: 'var(--bg-card)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border)',
+            cursor: 'pointer',
+            fontSize: '13px'
+          }}
+        >
+          Go Back
+        </button>
       </div>
     );
   }

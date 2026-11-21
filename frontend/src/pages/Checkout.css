@@ -185,3 +185,25 @@
     grid-row: 2;
   }
 }
+
+
+.track-existing-order-btn {
+  margin-top: 14px;
+  background: var(--accent);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 4px 12px var(--accent-shadow);
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.track-existing-order-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
